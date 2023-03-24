@@ -1,5 +1,5 @@
 # territorymaps
-Creating an R package for quick visualization of territory maps.
+Creates territory maps to visualize representation by region.
 
 ## Example Map
 
