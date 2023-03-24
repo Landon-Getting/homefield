@@ -1,13 +1,23 @@
 Package: territorymap
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Creates territory maps to visualize representation by region.
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Authors@R: 
+  c(person(given = "Landon",
+           family = "Getting",
+           role = c("aut", "cre"),
+           email = "landongetting@gmail.com"),
+    person(given = "Sudesh",
+           family = "Bhagat",
+           role = "aut",
+           email = "bhagat@iastate.edu"))
+Maintainer: Landon Getting <landongetting@gmail.com>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/Landon-Getting/territorymap
 BugReports: https://github.com/Landon-Getting/territorymap/issues
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
