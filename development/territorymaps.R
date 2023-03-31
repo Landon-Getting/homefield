@@ -5,6 +5,12 @@ library(magrittr)
 library(dplyr)
 library(magick)
 
+# testing parameters
+week = 12
+season = 2021
+output_file = "C:/Users/lwget/downloads/territorymap.png"
+threshold = 1e10
+
 ### TO DO
 # Think about creating saved object with counties and distance calculations already performed
 # Improve logo size generation - convert area to pixels
@@ -176,7 +182,11 @@ territorymap <- function(season = 2021, week = 6, threshold = 1e10, output_file)
   cli::cli_alert_info("Creating logos for map...")
 
   # magic to adjust the icon size based on territory area
-  icon_size <- (as.numeric(log(logo_areas$area)) - 21) * 22
+  #icon_size <- (as.numeric(log(logo_areas$area)) - 21) * 22
+  icon_size <- (as.numeric((logo_areas$area/1e11)) + 1) * 45
+
+  icon_size <- ifelse(icon_size > 500, 500, icon_size)
+  icon_size
 
   logoIcons <- leaflet::icons(
     iconUrl = logo_areas$best_logo,
@@ -293,51 +303,9 @@ territorymap <- function(season = 2021, week = 6, threshold = 1e10, output_file)
 
 }
 
-territorymap(season = 2021,
-             week = 12,
+territorymap(season = 2007,
+             week = 6,
              output_file = "C:/Users/lwget/downloads/territorymap.png")
 
-
-
-
-
-
-
-
-
-
-
-
-week = 2
-season = 2021
-output_file = "C:/Users/lwget/downloads/territorymap.png"
-threshold = 1e10
-
-# logo_copy <- logo_location
-#
-# logo_copy_2 <- logo_copy |>
-#   dplyr::group_by(id) |>
-#   dplyr::summarise(geometry = sf::st_nearest_points(centroid, geometry))
-#
-# logo_copy_2$distance <- sf::st_length(logo_copy_2$geometry)
-
-
-scale_integer <- function(x) {
-  # Determine the range of the input integer
-  range_x <- max(x) - min(x)
-
-  # Determine the proportion of the input integer within its range
-  proportion <- (x - min(x)) / range_x
-
-  # Scale the proportion to the desired output range
-  scaled_proportion <- sqrt(proportion) * (150 - 70)
-
-  # Add the minimum value to the scaled proportion to get the output value
-  output <- scaled_proportion + 70
-
-  return(output)
-}
-
-icon_size_scaled <- scale_integer(logo_location$area)
 
 
