@@ -11,44 +11,53 @@ library(magick)
 
 territorymap <- function(season = 2021, week = 6, threshold = 1e10, output_file){
 
+  start_time <- Sys.time()
+
   cli::cli_h1("Generating CFB Undefeated map...")
 
   # Querying CFB Data ----------------------------------------------------------
   cli::cli_alert_info("Querying CFB Data...")
 
-  for(week_number in 1:week){
+  if(week == 0){
 
-    if(week_number == 1){
-      game_info <- cfbfastR::cfbd_game_info(year = season,
-                                            week = week_number)
+    teams <- cfbfastR::cfbd_team_info(only_fbs = TRUE, year = season)
 
-    } else{
-      game_info <- rbind(game_info, cfbfastR::cfbd_game_info(year = season,
-                                                             week = week_number))
+  } else{
+
+    for(week_number in 1:week){
+
+      if(week_number == 1){
+        game_info <- cfbfastR::cfbd_game_info(year = season,
+                                              week = week_number)
+
+      } else{
+        game_info <- rbind(game_info, cfbfastR::cfbd_game_info(year = season,
+                                                               week = week_number))
+      }
     }
+
+    losers <- game_info |>
+      dplyr::mutate(
+        winner = dplyr::if_else(home_points > away_points, home_id, away_id),
+        loser = dplyr::if_else(home_points < away_points, home_id, away_id)
+      ) |>
+      dplyr::select(loser) |>
+      unique()
+
+    teams <- cfbfastR::cfbd_team_info(only_fbs = TRUE, year = season)
+
+    teams <- teams[!(teams$team_id %in% losers$loser), ]
   }
 
-  losers <- game_info |>
-    dplyr::mutate(
-      winner = dplyr::if_else(home_points > away_points, home_id, away_id),
-      loser = dplyr::if_else(home_points < away_points, home_id, away_id)
-    ) |>
-    dplyr::select(loser) |>
-    unique()
-
-  team_data <- cfbfastR::cfbd_team_info(only_fbs = TRUE, year = 2022)
-
-  undefeated_teams <- team_data[!(team_data$team_id %in% losers$loser), ]
-
   # getting only the columns needed
-  undefeated_subset <- undefeated_teams |>
+  teams_location <- teams |>
     dplyr::select(team_id,latitude,longitude)
 
   # converting lat/long to sf point object
-  undefeated_subset <-  sf::st_as_sf(undefeated_subset,
+  teams_location <-  sf::st_as_sf(teams_location,
                                      coords = c("longitude", "latitude"),
                                      crs = 4326) |>
-    dplyr::rename(location = geometry)
+                     dplyr::rename(location = geometry)
 
 
   # Querying Map Data ----------------------------------------------------------
@@ -57,29 +66,22 @@ territorymap <- function(season = 2021, week = 6, threshold = 1e10, output_file)
   states <- tigris::states(cb = TRUE) |>
     dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |>
     tigris::shift_geometry() |>
-    sf::st_transform("+proj=longlat +datum=WGS84")
+    sf::st_transform("+proj=longlat +datum=WGS84") |>
+    suppressMessages()
 
   # less detailed county data for determining color
   counties <- tigris::counties(cb = TRUE) |>
     dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |> # filtering out territories
     sf::st_transform("+proj=longlat +datum=WGS84") |> # Reproject to WGS84
-    dplyr::mutate(FIPS = paste0(STATEFP,COUNTYFP)) # add unique county identifier
+    dplyr::mutate(FIPS = paste0(STATEFP,COUNTYFP)) |> # add unique county identifier
+    suppressMessages()
 
   counties$centroid <- sf::st_centroid(counties$geometry)
-
-  # more detailed county information for determining logo locations
-  # counties_detailed <- tigris::counties() |>
-  #   dplyr::filter(!STATEFP %in% c(72,78,69,60,66,78)) |> # filtering out territories
-  #   sf::st_transform("+proj=longlat +datum=WGS84") |> # Reproject to WGS84
-  #   dplyr::mutate(FIPS = paste0(STATEFP,COUNTYFP)) # add unique county identifier
-  #
-  # counties_detailed$centroid <- sf::st_centroid(counties_detailed$geometry)
-  #
 
   # Calculating Distance between every county and school -----------------------
   cli::cli_alert_info("Calculating distances...")
 
-  comparing_distances <- tidyr::expand_grid(undefeated_subset,
+  comparing_distances <- tidyr::expand_grid(teams_location,
                                             counties |>
                                               dplyr::select(FIPS, centroid) |>
                                               sf::st_drop_geometry())
@@ -96,124 +98,94 @@ territorymap <- function(season = 2021, week = 6, threshold = 1e10, output_file)
     dplyr::group_by(FIPS) |>
     dplyr::slice(which.min(distances))
 
-
   # Determine best colors and logos to use for the map ---------------------------
   cli::cli_alert_info("Deciding on best colors and logos...")
 
   styling <- read.csv("C:/Users/lwget/Downloads/styling.csv")
 
   # getting best colors
-  undefeated_teams <- undefeated_teams |>
+  teams <- teams |>
     dplyr::mutate(best_color = dplyr::case_when(
       school %in% styling$alt_color_list ~ alt_color,
       !school %in% styling$alt_color_list ~ color
     ))
 
   # getting best logos
-  undefeated_teams <- undefeated_teams |>
+  teams <- teams |>
     dplyr::mutate(best_logo = dplyr::case_when(
       school %in% styling$alt_logo_list ~ logo_2,
       !school %in% styling$alt_logo_list ~ logo
     ))
 
-  undefeated_teams <- undefeated_teams |> dplyr::arrange(school)
+  teams <- teams |> dplyr::arrange(school)
 
   # Create data frame for color mapping -----------------------------------------
   cli::cli_alert_info("Creating data frame for color mapping...")
 
-  master_df <- comparing_distances |>
+  school_map <- comparing_distances |>
     dplyr::select(FIPS,team_id) |>
     dplyr::left_join(counties |>
                        tigris::shift_geometry() |> # shift Alaska and Hawaii below
                        sf::st_transform("+proj=longlat +datum=WGS84") |>
-                       dplyr::select(FIPS, NAME, geometry), by = "FIPS", keep = FALSE) |>
-    dplyr::left_join(undefeated_teams |>
+                       dplyr::select(FIPS, geometry), by = "FIPS", keep = FALSE) |>
+    dplyr::left_join(teams |>
                        dplyr::select(team_id, school,best_color, best_logo), by = "team_id", keep = FALSE)
 
-  master_df <- sf::st_as_sf(master_df)
-
-
-  # Create data frame for logo mapping -------------------------------------------
-  cli::cli_alert_info("Creating data frame for logo mapping...")
-
-  # master_logo_df <- comparing_distances |>
-  #   dplyr::select(FIPS,team_id) |>
-  #   dplyr::left_join(counties_detailed |>
-  #                      tigris::shift_geometry() |>
-  #                      dplyr::filter(!STATEFP %in% c(72,78,69,60,66,78)) |>
-  #                      sf::st_transform("+proj=longlat +datum=WGS84") |>
-  #                      dplyr::select(FIPS, NAME, geometry), by = "FIPS", keep = FALSE) |>
-  #   dplyr::left_join(undefeated_teams |>
-  #                      dplyr::select(team_id, school,best_logo), by = "team_id", keep = FALSE)
-  #
-  #
-  # master_logo_df <- sf::st_as_sf(master_logo_df)
+  school_map <- sf::st_as_sf(school_map)
 
   # getting logo locations --------------------------------------------------
   cli::cli_alert_info("Getting logo locations...")
 
   # Apply the function to the example data frame
-  school_zones <- master_df |>
+  counties_grouped <- school_map |>
     dplyr::group_by(school) |>
-    dplyr::summarise(geometry = sf::st_union(geometry, is_coverage = TRUE))
+    dplyr::summarise(geometry = suppressWarnings(sf::st_union(geometry,
+                                             is_coverage = TRUE)))  # reduces calculation time
 
-  school_zones <- sf::st_cast(school_zones |> dplyr::select(school, geometry),
+  counties_grouped <- sf::st_cast(counties_grouped |> dplyr::select(school, geometry),
                        "MULTIPOLYGON")
 
-  school_zones <- sf::st_cast(school_zones |> dplyr::select(school, geometry),
-                       "POLYGON")
+  counties_grouped <- sf::st_cast(counties_grouped |> dplyr::select(school, geometry),
+                       "POLYGON") |> suppressWarnings()
 
-  school_zones <- sf::st_as_sf(school_zones)
+  counties_grouped <- sf::st_as_sf(counties_grouped)
 
   # if there is more than one logo, find area of each polygon
   # biggest polygon stays, the rest must be over a certain size to remain
-  school_zones <- school_zones |>
-    dplyr::mutate(area = sf::st_area(school_zones$geometry))
+  counties_grouped <- counties_grouped |>
+    dplyr::mutate(area = as.numeric(sf::st_area(counties_grouped$geometry)),
+                  id = dplyr::row_number())
 
-  school_zones$area <- as.numeric(school_zones$area)
-
-  school_zones <- dplyr::mutate(school_zones,
-                                id = dplyr::row_number())
-
-  largest_area <- school_zones |>
+  largest_areas <- counties_grouped |>
     dplyr::group_by(school) |>
     dplyr::filter(area == max(area))
 
-  filtered <- school_zones |>
+  above_threshold_areas <- counties_grouped |>
     dplyr::group_by(school) |>
     dplyr::filter(area > threshold)
 
-  result <- dplyr::bind_rows(largest_area, filtered) |>
+  logo_areas <- dplyr::bind_rows(largest_areas, above_threshold_areas) |>
     dplyr::distinct(id, .keep_all = TRUE) |>
+    dplyr::arrange(school) |>
+    dplyr::mutate(centroid = sf::st_centroid(geometry)) |>
+    dplyr::left_join(teams |> dplyr::select(school, best_logo),
+                     by = "school") |>
     dplyr::arrange(school)
-
-  logo_location <- result |>
-    dplyr::mutate(centroid = sf::st_centroid(result$geometry))
-
-  # NEW
-  logo_location <- dplyr::left_join(logo_location,
-                                    undefeated_teams |>
-                                      dplyr::select(school,best_logo),
-                                    by = "school")
-
-  logo_location <- logo_location |> dplyr::arrange(school)
-
 
   # Create logos for map --------------------------------------------------------
   cli::cli_alert_info("Creating logos for map...")
 
-  #icon_size <- (logo_location$area/5e+12)
-  icon_size <- (as.numeric(log(logo_location$area)) - 21) * 22
+  # magic to adjust the icon size based on territory area
+  icon_size <- (as.numeric(log(logo_areas$area)) - 21) * 22
 
   logoIcons <- leaflet::icons(
-    iconUrl = logo_location$best_logo,
-    # magic to adjust the icon size based on territory area
+    iconUrl = logo_areas$best_logo,
     iconWidth = icon_size,
     iconHeight = icon_size
   )
 
-  logo_location <- sf::st_drop_geometry(logo_location)
-  logo_location <- sf::st_as_sf(logo_location)
+  logo_areas <- sf::st_drop_geometry(logo_areas)
+  logo_areas <- sf::st_as_sf(logo_areas)
 
 
   # Reprojection
@@ -236,7 +208,7 @@ territorymap <- function(season = 2021, week = 6, threshold = 1e10, output_file)
     leaflet::setView(lng = -98.64580,
                      lat = 38.05909,
                      zoom = 5) |>
-    leaflet::addPolygons(data = master_df,
+    leaflet::addPolygons(data = school_map,
                          color = "#434445",
                          weight = 0,
                          fillColor = ~best_color,
@@ -244,10 +216,10 @@ territorymap <- function(season = 2021, week = 6, threshold = 1e10, output_file)
                          smoothFactor = 0.2,
                          stroke = F,
                          label = ~school) |>
-    leaflet::addMarkers(data = logo_location,
+    leaflet::addMarkers(data = logo_areas,
                         label = ~school,
                         icon = logoIcons) |>
-    leaflet::addPolylines(data = master_df,
+    leaflet::addPolylines(data = school_map,
                         color = "grey",
                         weight = 0.25,
                         smoothFactor = 0,
@@ -277,12 +249,16 @@ territorymap <- function(season = 2021, week = 6, threshold = 1e10, output_file)
 
   text_to_plot <- tibble::tibble(x = 0.6,
                                  y = 0.9,
-                                 text = paste0("CFB Undefeated Map: \n",  2021, " Season, Week ", 3))
+                                 text = paste0("Closest Undefeated D1 Football Team to each US County: \n",
+                                               season,
+                                               " Season, Week ",
+                                               week,
+                                               "\n Created by u/ThatGuy_Sev"))
 
   final_img <- ggplot2::ggplot(data = text_to_plot) +
     ggplot2::annotation_raster(img, xmin = 0, xmax = 1, ymin = 0, ymax = 1) +
     ggplot2::geom_text(ggplot2::aes(x = x, y = y, label = text),
-                       size = 1800,
+                       size = 1500,
                        family = "Open Sans Extrabold",
                        fontface = "bold") +
     #ggimage::geom_image(ggplot2::aes(image = "./inst/www/cfb-imp-map-logo-named-alt.png", x = 0.085, y = 0.85), size = 0.090, asp = 1.6) +
@@ -299,24 +275,26 @@ territorymap <- function(season = 2021, week = 6, threshold = 1e10, output_file)
                   limitsize = FALSE,
                   dpi = 1)
 
-  # read in image
-  img <- magick::image_read(output_file)
-
-  # trim whitespace on edges
-  img <- magick::image_trim(img)
-
-  # shave off a few extra pixels to remove leaflet UI
-  img <- magick::image_chop(img, "+40+10")
-
-  # save trimmed image
-  magick::image_write(img, output_file)
+  magick::image_read(output_file) |>
+    magick::image_trim() |>
+    magick::image_chop("40x10") |>
+    magick::image_flip() |>
+    magick::image_chop("10x20") |>
+    magick::image_flip() |>
+    magick::image_write(output_file, format = "png")
 
   cli::cli_alert_info("Finished! :)")
+
+  end_time <- Sys.time()
+
+  total_time <- end_time - start_time
+
+  return(sprintf("The program ran for %s seconds.", total_time))
 
 }
 
 territorymap(season = 2021,
-             week = 3,
+             week = 12,
              output_file = "C:/Users/lwget/downloads/territorymap.png")
 
 
@@ -325,194 +303,15 @@ territorymap(season = 2021,
 
 
 
-week = 3
+
+
+
+
+
+week = 2
 season = 2021
 output_file = "C:/Users/lwget/downloads/territorymap.png"
 threshold = 1e10
-
-cli::cli_h1("Generating CFB Undefeated map...")
-
-# Querying CFB Data ----------------------------------------------------------
-cli::cli_alert_info("Querying CFB Data...")
-
-for(week_number in 1:week){
-
-  if(week_number == 1){
-    game_info <- cfbfastR::cfbd_game_info(year = season,
-                                          week = week_number)
-
-  } else{
-    game_info <- rbind(game_info, cfbfastR::cfbd_game_info(year = season,
-                                                           week = week_number))
-  }
-}
-
-losers <- game_info |>
-  dplyr::mutate(
-    winner = dplyr::if_else(home_points > away_points, home_id, away_id),
-    loser = dplyr::if_else(home_points < away_points, home_id, away_id)
-  ) |>
-  dplyr::select(loser) |>
-  unique()
-
-team_data <- cfbfastR::cfbd_team_info(only_fbs = TRUE, year = 2022)
-
-undefeated_teams <- team_data[!(team_data$team_id %in% losers$loser), ]
-
-# getting only the columns needed
-undefeated_subset <- undefeated_teams |> dplyr::select(team_id,latitude,longitude)
-
-# converting lat/long to sf point object
-undefeated_subset <-  sf::st_as_sf(undefeated_subset,
-                                   coords = c("longitude", "latitude"),
-                                   crs = 4326) |>
-  dplyr::rename(location = geometry)
-
-
-# Querying Map Data ----------------------------------------------------------
-cli::cli_alert_info("Querying Map Data...")
-
-states <- tigris::states(cb = TRUE) |>
-  dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |>
-  tigris::shift_geometry() |>
-  sf::st_transform("+proj=longlat +datum=WGS84")
-
-
-# less detailed county data for determining color
-counties <- tigris::counties(cb = TRUE) |>
-  dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |> # filtering out territories
-  sf::st_transform("+proj=longlat +datum=WGS84") |> # Reproject to WGS84
-  dplyr::mutate(FIPS = paste0(STATEFP,COUNTYFP)) # add unique county identifier
-
-counties$centroid <- sf::st_centroid(counties$geometry)
-
-# more detailed county information for determining logo locations
-counties_detailed <- tigris::counties() |>
-  dplyr::filter(!STATEFP %in% c(72,78,69,60,66,78)) |> # filtering out territories
-  sf::st_transform("+proj=longlat +datum=WGS84") |> # Reproject to WGS84
-  dplyr::mutate(FIPS = paste0(STATEFP,COUNTYFP)) # add unique county identifier
-
-counties_detailed$centroid <- sf::st_centroid(counties_detailed$geometry)
-
-
-# Calculating Distance between every county and school -----------------------
-cli::cli_alert_info("Calculating distances...")
-
-comparing_distances <- tidyr::expand_grid(undefeated_subset,
-                                          counties |>
-                                            dplyr::select(FIPS, centroid) |>
-                                            sf::st_drop_geometry())
-
-comparing_distances$location <- sf::st_as_sf(comparing_distances$location)
-comparing_distances$centroid <- sf::st_as_sf(comparing_distances$centroid)
-
-comparing_distances$distances <- sf::st_distance(comparing_distances$location$x, comparing_distances$centroid$x, by_element = TRUE)
-
-comparing_distances <- comparing_distances |>
-  dplyr::select(FIPS,team_id,distances) |>
-  dplyr::group_by(FIPS) |>
-  dplyr::slice(which.min(distances))
-
-
-# Determine best colors and logos to use for the map ---------------------------
-cli::cli_alert_info("Deciding on best colors and logos...")
-
-styling <- read.csv("C:/Users/lwget/Downloads/styling.csv")
-
-# getting best colors
-undefeated_teams <- undefeated_teams |>
-  dplyr::mutate(best_color = dplyr::case_when(
-    school %in% styling$alt_color_list ~ alt_color,
-    !school %in% styling$alt_color_list ~ color
-  ))
-
-# getting best logos
-undefeated_teams <- undefeated_teams |>
-  dplyr::mutate(best_logo = dplyr::case_when(
-    school %in% styling$alt_logo_list ~ logo_2,
-    !school %in% styling$alt_logo_list ~ logo
-  ))
-
-undefeated_teams <- undefeated_teams |> dplyr::arrange(school)
-
-# Create data frame for color mapping -----------------------------------------
-cli::cli_alert_info("Creating data frame for color mapping...")
-
-master_df <- comparing_distances |>
-  dplyr::select(FIPS,team_id) |>
-  dplyr::left_join(counties |>
-                     tigris::shift_geometry() |> # shift Alaska and Hawaii below
-                     sf::st_transform("+proj=longlat +datum=WGS84") |>
-                     dplyr::select(FIPS, NAME, geometry), by = "FIPS", keep = FALSE) |>
-  dplyr::left_join(undefeated_teams |>
-                     dplyr::select(team_id, school,best_color), by = "team_id", keep = FALSE)
-
-master_df <- sf::st_as_sf(master_df)
-
-
-# Create data frame for logo mapping -------------------------------------------
-cli::cli_alert_info("Creating data frame for logo mapping...")
-
-master_logo_df <- comparing_distances |>
-  dplyr::select(FIPS,team_id) |>
-  dplyr::left_join(counties_detailed |>
-                     tigris::shift_geometry() |>
-                     dplyr::filter(!STATEFP %in% c(72,78,69,60,66,78)) |>
-                     sf::st_transform("+proj=longlat +datum=WGS84") |>
-                     dplyr::select(FIPS, NAME, geometry), by = "FIPS", keep = FALSE) |>
-  dplyr::left_join(undefeated_teams |>
-                     dplyr::select(team_id, school,best_logo), by = "team_id", keep = FALSE)
-
-
-master_logo_df <- sf::st_as_sf(master_logo_df)
-
-# getting logo locations --------------------------------------------------
-cli::cli_alert_info("Getting logo locations...")
-
-# Apply the function to the example data frame
-school_zones <- master_logo_df |>
-  dplyr::group_by(school) |>
-  dplyr::summarise(geometry = sf::st_union(geometry, is_coverage = TRUE))
-
-school_zones <- sf::st_cast(school_zones |> dplyr::select(school, geometry),
-                            "MULTIPOLYGON")
-
-school_zones <- sf::st_cast(school_zones |> dplyr::select(school, geometry),
-                            "POLYGON")
-
-school_zones <- sf::st_as_sf(school_zones)
-
-# if there is more than one logo, find area of each polygon
-# biggest polygon stays, the rest must be over a certain size to remain
-school_zones <- school_zones |>
-  dplyr::mutate(area = sf::st_area(school_zones$geometry))
-
-school_zones$area <- as.numeric(school_zones$area)
-
-school_zones <- dplyr::mutate(school_zones,
-                              id = dplyr::row_number())
-
-largest_area <- school_zones |>
-  dplyr::group_by(school) |>
-  dplyr::filter(area == max(area))
-
-filtered <- school_zones |>
-  dplyr::group_by(school) |>
-  dplyr::filter(area > threshold)
-
-result <- dplyr::bind_rows(largest_area, filtered) |>
-  dplyr::distinct(id, .keep_all = TRUE) |>
-  dplyr::arrange(school)
-
-logo_location <- result |>
-  dplyr::mutate(centroid = sf::st_centroid(result$geometry))
-
-logo_location <- dplyr::left_join(logo_location,
-                                  undefeated_teams |>
-                                    dplyr::select(school,best_logo),
-                                  by = "school")
-
-logo_location <- logo_location |> dplyr::arrange(school)
 
 # logo_copy <- logo_location
 #
@@ -522,68 +321,23 @@ logo_location <- logo_location |> dplyr::arrange(school)
 #
 # logo_copy_2$distance <- sf::st_length(logo_copy_2$geometry)
 
-# Create logos for map --------------------------------------------------------
-cli::cli_alert_info("Creating logos for map...")
 
-#icon_size <- (logo_location$area/5e+12)
-icon_size <- (as.numeric(log(logo_location$area)) - 21) * 22
+scale_integer <- function(x) {
+  # Determine the range of the input integer
+  range_x <- max(x) - min(x)
 
+  # Determine the proportion of the input integer within its range
+  proportion <- (x - min(x)) / range_x
 
-logoIcons <- leaflet::icons(
-  iconUrl = logo_location$best_logo,
-  # magic to adjust the icon size based on territory area
-  iconWidth = icon_size,
-  iconHeight = icon_size
-)
+  # Scale the proportion to the desired output range
+  scaled_proportion <- sqrt(proportion) * (150 - 70)
 
-logo_location <- sf::st_drop_geometry(logo_location)
-logo_location <- sf::st_as_sf(logo_location)
+  # Add the minimum value to the scaled proportion to get the output value
+  output <- scaled_proportion + 70
 
+  return(output)
+}
 
-# Reprojection
-epsg2163 <- leaflet::leafletCRS(
-  crsClass = "L.Proj.CRS",
-  code = "ESRI:102003",
-  proj4def = "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs",
-  resolutions = 2^(16:7)
-)
-
-# Plotting map ----------------------------------------------------------------
-cli::cli_alert_info("Plotting map...")
-
-m <- leaflet::leaflet(options = leaflet::leafletOptions(crs = epsg2163,
-                                                        zoomControl = TRUE,
-                                                        zoomSnap = 0.25,
-                                                        zoomDelta = 1),
-                      height = 2000,
-                      width = 3200) |>
-  leaflet::setView(lng = -98.64580,
-                   lat = 38.05909,
-                   zoom = 5) |>
-  leaflet::addPolygons(data = master_df,
-                       color = "#434445",
-                       weight = 0,
-                       fillColor = ~best_color,
-                       fillOpacity = 0.9,
-                       smoothFactor = 0.2,
-                       stroke = F,
-                       label = ~school) |>
-  leaflet::addMarkers(data = logo_location,
-                      label = ~school,
-                      icon = logoIcons) |>
-  leaflet::addPolylines(data = master_df,
-                        color = "grey",
-                        weight = 0.25,
-                        smoothFactor = 0,
-                        opacity = 0.75)  |>
-  leaflet::addPolylines(data = states,
-                        color = "black",
-                        weight = 1,
-                        smoothFactor = 0,
-                        opacity = 1)
-m
-
-
-
+icon_size_scaled <- scale_integer(logo_location$area)
 
 
