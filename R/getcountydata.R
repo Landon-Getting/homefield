@@ -1,4 +1,4 @@
-#' prepdata
+#' getcountydata
 #'
 #' @importFrom magrittr %>%
 #' @importFrom tigris counties
@@ -7,7 +7,7 @@
 #'
 #' @export
 #'
-prepdata <- function() {
+getcountydata <- function() {
 
   counties = counties()
 
