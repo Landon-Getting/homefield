@@ -185,8 +185,7 @@ territorymap <- function(season = 2021, week = 6, threshold = 1e10, output_file)
   #icon_size <- (as.numeric(log(logo_areas$area)) - 21) * 22
   icon_size <- (as.numeric((logo_areas$area/1e11)) + 1) * 45
 
-  icon_size <- ifelse(icon_size > 500, 500, icon_size)
-  icon_size
+  icon_size <- ifelse(icon_size > 400, 400, icon_size)
 
   logoIcons <- leaflet::icons(
     iconUrl = logo_areas$best_logo,
@@ -303,9 +302,8 @@ territorymap <- function(season = 2021, week = 6, threshold = 1e10, output_file)
 
 }
 
-territorymap(season = 2007,
-             week = 6,
+territorymap(season = 2017,
+             week = 0,
              output_file = "C:/Users/lwget/downloads/territorymap.png")
-
 
 
