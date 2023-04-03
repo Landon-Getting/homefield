@@ -1,6 +1,6 @@
 Package: territorymap
 Type: Package
-Title: Creates territory maps to visualize representation by region.
+Title: territorymap
 Version: 0.1.0
 Authors@R: 
   c(person(given = "Landon",
@@ -12,9 +12,10 @@ Authors@R:
            role = "aut",
            email = "bhagat@iastate.edu"))
 Maintainer: Landon Getting <landongetting@gmail.com>
-Description: More about what it does (maybe more than one line)
+Description: Creates territory maps to visualize representation by region.
     Use four spaces when indenting paragraphs within the Description.
 License: MIT + file LICENSE
+Imports: leaflet, magrittr, tigris, dplyr, htmlwidgets, webshot2, ggplot2, magick, cli, sf
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/Landon-Getting/territorymap
