@@ -17,6 +17,6 @@ territorymap(x, threshold = 10000, output_file)
 territorymap
 }
 \examples{
-cfb_data <- get_cfb_undefeated(season = 2016, week 6)
+cfb_data <- get_cfb_undefeated(season = 2016, week = 6)
 territorymap(x = cfb_data, output_file = "C:/Users/darthvader/Downloads")
 }

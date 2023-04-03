@@ -4,29 +4,118 @@
 #' @param threshold area in km^2 for secondary logos
 #' @param output_file file path for output .png
 #'
+#'
 #' @export
 #'
 #' @examples
 #' cfb_data <- get_cfb_undefeated(season = 2016, week = 6)
 #' territorymap(x = cfb_data, output_file = "C:/Users/darthvader/Downloads")
-territorymap <- function(x, threshold = 10000, output_file){
+territorymap <- function(x, threshold = 10000, output_file, title = "Territory Map", credit){
 
   # TO DO
-  # fix save widget location
-  # add title/credit option
-  # perform checks on input arguments
+  # scale grey border color of county polylines based on the team color darkness
+  # improve logo size generation
+  # what if no undefeated
 
+  # Performing input checks ---------------------------------------------------
+
+  # setting expected column names
+  expected_cols <- c("identifier",
+                     "lat",
+                     "lng",
+                     "color",
+                     "image")
+
+  # checking if column names match expected names
+  if (!all(expected_cols %in% names(x))) {
+    stop("x must contain columns identifier, lat, lng, color, and image.")
+  }
+
+  # getting column sizes
+  col_lengths <- sapply(x, length)
+
+  # Checking if all column lengths are equal
+  if (!length(unique(col_lengths)) == 1) {
+    stop("x must contain columns of equal size.")
+  }
+
+  # Defining a regular expression for matching valid latitude values
+  lat_regex <- "^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)$"
+
+  # Checking if the latitude column contains valid latitude values
+  if (!all(grepl(lat_regex, x$lat, ignore.case = TRUE))) {
+    stop("x must contain a lat column with valid latitudes.")
+  }
+
+  # Defining a regular expression for matching valid longitude values
+  long_regex <- "^[-+]?((1[0-7]|[1-9])?\\d(\\.\\d+)?|180(\\.0+)?)$"
+
+  # Checking if the longitude column contains valid longitude values
+  if (!all(grepl(long_regex, x$lng, ignore.case = TRUE))) {
+    stop("x must contain a lng column with valid longitudes")
+  }
+
+  # Defining a regular expression for matching valid hex color codes
+  hex_regex <- "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+
+  # Checking if the color column contains valid hex color codes
+  if (!all(grepl(hex_regex, x$color))) {
+    stop("x must contain a color column with valid colors in hexadecimal format.")
+  }
+
+  # https://stackoverflow.com/questions/52911812/check-if-url-exists-in-r
+  # creating url checker for image column
+  valid_url <- function(url_in,t=2){
+    con <- url(url_in)
+    check <- suppressWarnings(try(open.connection(con,open="rt",timeout=t),silent=T)[1])
+    suppressWarnings(try(close.connection(con),silent=T))
+    ifelse(is.null(check),TRUE,FALSE)
+  }
+
+  # checking image column for valid url or file paths
+  if(!(all(sapply(x$image,valid_url)) | (all(dir.exists(x$image)) & all(file.access(x$image, mode = 4))))) {
+    stop("x must contain an image column with valid urls or accessible local file paths.")
+  }
+
+  # checking valid threshold value
+  if (!(threshold > 0 & is.numeric(threshold))) {
+    stop("The threshold must be a positive numerical value representing area in km^2.")
+  }
+
+  # checking if output_file path is valid and user has write permission
+  if (!dir.exists(dirname(output_file)) | file.access(dirname(output_file), mode = 2)) {
+    stop("output_file must be a valid directory path with write access.")
+  }
+
+  # Checking if output_file basename is valid
+  if (!grepl("^[^[:cntrl:]/?*:;{}\\\\]+\\.[^[:cntrl:]/?*:;{}\\\\]+$", basename(output_file))) {
+    stop("Invalid output_file name.")
+  }
+
+  # Checking if title is valid
+  if (!is.character(title)) {
+    stop("title must be of type character.")
+  }
+
+  # Checking if credit is valid
+  if (!is.character(credit)) {
+    stop("credit must be of type character.")
+  }
+
+  cli::cli_h1("Generating Territory Map...")
+
+  threshold = 10000
+  output_file = "C:/Users/lwget/Downloads/territorymap.png"
 
   # convert threshold from km^2 to m^2
   threshold <- threshold*1e6
 
   input_df <- x
 
-
   input_df_location <- input_df |>
     dplyr::select(identifier,lat,lng)
 
-  # converting lat/long to sf point object
+  # converting lat/long to sf point object -------------------------------------
   input_df_location <-  sf::st_as_sf(input_df_location,
                                   coords = c("lng", "lat"),
                                   crs = 4326) |>
@@ -40,7 +129,6 @@ territorymap <- function(x, threshold = 10000, output_file){
     sf::st_transform("+proj=longlat +datum=WGS84") |>
     suppressMessages()
 
-  # less detailed county data for determining color
   counties <- tigris::counties(cb = TRUE) |>
     dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |> # filtering out territories
     sf::st_transform("+proj=longlat +datum=WGS84") |> # Reproject to WGS84
@@ -172,7 +260,7 @@ territorymap <- function(x, threshold = 10000, output_file){
                         label = ~identifier,
                         icon = logoIcons) |>
     leaflet::addPolylines(data = territory_map_df,
-                          color = "grey",
+                          color = "#cfcfcf",
                           weight = 0.25,
                           smoothFactor = 0,
                           opacity = 0.75)  |>
@@ -199,21 +287,27 @@ territorymap <- function(x, threshold = 10000, output_file){
   h <- as.numeric(dim(img)[1])
   w <- as.numeric(dim(img)[2])
 
-  text_to_plot <- tibble::tibble(x = 0.6,
-                                 y = 0.9,
-                                 text = paste0("Closest Undefeated D1 Football Team to each US County: \n",
-                                               season,
-                                               " Season, Week ",
-                                               week,
-                                               "\n Created by u/ThatGuy_Sev"))
-
   final_img <- ggplot2::ggplot(data = text_to_plot) +
     ggplot2::annotation_raster(img, xmin = 0, xmax = 1, ymin = 0, ymax = 1) +
-    ggplot2::geom_text(ggplot2::aes(x = x, y = y, label = text),
+    ggplot2::geom_text(ggplot2::aes(x = 0.5,
+                                    y = 0.9,
+                                    label = paste0(title)),
                        size = 1500,
                        family = "Open Sans Extrabold",
                        fontface = "bold") +
-    #ggimage::geom_image(ggplot2::aes(image = "./inst/www/cfb-imp-map-logo-named-alt.png", x = 0.085, y = 0.85), size = 0.090, asp = 1.6) +
+    ggplot2::geom_text(ggplot2::aes(x = 0.5,
+                                    y = 0.03,
+                                    label = paste0("Created by ",
+                                                   credit,
+                                                   " with the territorymap R package.")),
+                       size = 700,
+                       family = "Open Sans Extrabold") +
+    # hex sticker
+    ggimage::geom_image(ggplot2::aes(image = "./inst/figures/sticker.png",
+                                     x = 250/3200, # 250  pixels from the left
+                                     y = 1-(215/2000)), # 225 pixels from the top
+                        size = 0.090,
+                        asp = 1.6) +
     ggplot2::xlim(0,1) +
     ggplot2::ylim(0,1) +
     ggthemes::theme_map()
@@ -240,4 +334,10 @@ territorymap <- function(x, threshold = 10000, output_file){
   cli::cli_alert_info("Finished! :)")
 
 }
+
+
+
+
+
+
 

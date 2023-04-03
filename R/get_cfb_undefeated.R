@@ -37,12 +37,25 @@ get_cfb_undefeated <- function(season = 2021, week = 6){
     for(week_number in 1:week){
 
       if(week_number == 1){
-        game_info <- cfbfastR::cfbd_game_info(year = season,
-                                              week = week_number)
+        game_info <-  tryCatch({
+                        cfbfastR::cfbd_game_info(year = season, week = week_number)
+                      },
+                      error = function(e) {
+                        message(paste0("Week ", week, " had missing data."))
+                      }, warning = function(w) {
+                        message(paste0("Week ", week, " had missing data."))
+                      })
 
       } else{
-        game_info <- rbind(game_info, cfbfastR::cfbd_game_info(year = season,
-                                                               week = week_number))
+        game_info <- rbind(game_info,
+                           tryCatch({
+                             cfbfastR::cfbd_game_info(year = season, week = week_number)
+                           },
+                           error = function(e) {
+                             message(paste0("Week ", week, " had missing data."))
+                           }, warning = function(w) {
+                             message(paste0("Week ", week, " had missing data."))
+                           }))
       }
     }
 

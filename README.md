@@ -1,23 +1,24 @@
-# territorymaps
+---
+output:
+  html_document: default
+---
+# territorymap
 Creates territory maps to visualize representation by region.
 
 ## Example Map
 
-![image](https://user-images.githubusercontent.com/91226307/221045102-38ed1dd5-76fa-4f1f-9752-bc87d2b3f3f6.png)
+![](./inst/figures/example_territorymap.png)
 
-*Inspired by [u/CaptainScuttlebottom](https://www.reddit.com/user/CaptainScuttlebottom/submitted/) and [u/jloose128 on Reddit](https://www.reddit.com/user/jloose128/).
+## Input Data Frame:
 
-## Input:
-Data frame where each element has latitude, longitude, and a file path to an image.
-
-| Latitude | Longitude | Image |
-| ----------- | ----------- | ----------- |
-| 42.501171 | -94.169388 | C:/Users/lwget/Documents/PlotPictures/Dodgers.jpg |
-| 42.026798 | -93.620178 | C:/Users/lwget/Documents/PlotPictures/Little-Cyclones.jpg |
-| 41.644040 | -93.464610 | C:/Users/lwget/Documents/PlotPictures/Rams.jpg |
+| Identifier | Latitude | Longitude | Color | Image |
+| ----------- | ----------- | ----------- | ----------- | ----------- |
+| Dodgers | 42.501171 | -94.169388 | #bf250d | C:/Users/darthvader/Documents/PlotPictures/Dodgers.jpg |
+| Little Cyclones | 42.501171 | -94.169388 | #eda01a | C:/Users/darthvader/Documents/PlotPictures/Little-Cyclones.jpg |
+| Rams | 42.501171 | -93.464610 | #ffe924 | C:/Users/darthvader/Documents/PlotPictures/Rams.jpg |
 
 ## Output:
-Territory map where each element is represented on a map by the closest regions (counties/states/countries) to the input lat and long. This calculation is performed based on the centriod of each region. Regions are colored based on the most frequent color in the image or by a provided color in another column of the data frame (can preference a provided color if given and then resort to most frequent color). The image from each element is placed into its respective territory. The image does not touch the boundries of the territory and fits inside nicely.
+Territory map where each element is represented on a map by the closest regions (counties/states/countries) to the input lat and long. This calculation is performed based on the centroid of each region. Regions are colored based on provided colors in column of the data frame. The image from each element is placed into its respective territory. The image does not touch the boundaries of the territory and fits inside nicely.
 
 ## Use Cases:
 
@@ -27,6 +28,7 @@ Territory map where each element is represented on a map by the closest regions 
 
 **Commerical -** Show the LinkedIn headshot for the closest sales rep to each state.
 
-**Political -** What is the closest private high school to each Iowan county? what is the closest public high school to each Iowan county?
+**Political -** What is the closest private high school to each Minnesota county? What is the closest public high school to each Wisconsin county?
 
+*Inspired by [u/CaptainScuttlebottom](https://www.reddit.com/user/CaptainScuttlebottom/) and [u/jloose128 ](https://www.reddit.com/user/jloose128/) on Reddit*
 
