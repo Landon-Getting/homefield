@@ -4,25 +4,35 @@
 \alias{territorymap}
 \title{territorymap}
 \usage{
-territorymap(
-  x,
-  threshold = 10000,
-  output_file,
-  title = "Territory Map",
-  credit
-)
+territorymap(x, threshold = 10000, output_file, title = NULL, credit = NULL)
 }
 \arguments{
-\item{x}{data frame with specific columns TBD}
+\item{x}{Data frame created by other territorymap functions or including the following columns:\cr
+\cr
+\strong{identifier} - identifies each element (ex. school name - Iowa State, Minnesota, Bowling Green)\cr
+\cr
+\strong{lat} - latitude of element\cr
+\cr
+\strong{lng} - longitude of element\cr
+\cr
+\strong{color} - hexadecimal color to fill element territories (ex. #cfab7a)\cr
+\cr
+\strong{image} - image url or local file path to be placed on at least one territory and all territories over the threshold.\cr
+\cr
+Columns must also be of equal length and match the specified names exactly.}
 
-\item{threshold}{area in km^2 for secondary logos}
+\item{threshold}{(Numeric required): If territory above threshold (area in km^2), a secondary logo will be generated for that territory. \emph{Defaults to 10,000 km^2.}}
 
-\item{output_file}{file path for output .png}
+\item{output_file}{(String required): Local file path ending in \emph{.png}.}
+
+\item{title}{(String required): Title of the map.}
+
+\item{credit}{(String required): Name of the map author.}
 }
 \description{
 territorymap
 }
 \examples{
-cfb_data <- get_cfb_undefeated(season = 2016, week = 6)
-territorymap(x = cfb_data, output_file = "C:/Users/darthvader/Downloads")
+\dontrun{cfb_data <- get_cfb_undefeated(season = 2016, week = 6)}
+\dontrun{territorymap(x = cfb_data, output_file = paste0(getwd(),"/territorymap_example.png"))}
 }

@@ -1,18 +1,22 @@
 #' get_cfb_undefeated
-#' @description Provides a data frame with information regarding undefeated D1 College Football teams. The data frame is ready for plotting with territorymaps().
+#' @description Provides a data frame with the undefeated D1 College Football teams during a particular season and week. The data frame is ready for plotting with territorymaps().
 #'
-#' @param season (Integer required): Year, 4 digit format (YYYY), ~1897 to present
-#' @param week (Integer required): Week - values from 1-15, 1-14 for seasons pre-playoff (i.e. 2013 or eariler)
+#' @param season (Integer required): Year, 4 digit format (YYYY), ~1897 to present.
+#' @param week (Integer required): Week, values from 1-15, 1-14 for seasons pre-playoff (i.e. 2013 or eariler).
 #'
-#' @return Returns data frame prepared for territorymap()
+#' @importFrom rlang .data
+#' @return Returns data frame prepared for territorymap().
 #' @export
 #'
 #' @examples
 #' get_cfb_undefeated(season = 2016, week = 8)
 get_cfb_undefeated <- function(season, week){
 
+  # converting to numeric if inputted as string
   season <- as.numeric(season)
   week <- as.numeric(week)
+
+  # Input Checks --------------------------------------------------------------
 
   # check for valid season
   if(season > as.numeric(format(Sys.Date(), "%Y")) | season < 1897){
@@ -47,10 +51,14 @@ get_cfb_undefeated <- function(season, week){
 
     losers <- game_info |>
       dplyr::mutate(
-        winner = dplyr::if_else(home_points > away_points, home_id, away_id),
-        loser = dplyr::if_else(home_points < away_points, home_id, away_id)
+        winner = dplyr::if_else(.data$home_points > .data$away_points,
+                                .data$home_id,
+                                .data$away_id),
+        loser = dplyr::if_else(.data$home_points < .data$away_points,
+                               .data$home_id,
+                               .data$away_id)
       ) |>
-      dplyr::select(loser) |>
+      dplyr::select(.data$loser) |>
       unique()
 
     teams <- cfbfastR::cfbd_team_info(only_fbs = TRUE, year = season)
@@ -114,25 +122,29 @@ get_cfb_undefeated <- function(season, week){
   # getting best colors
   teams <- teams |>
     dplyr::mutate(best_color = dplyr::case_when(
-      school %in% alt_color_list ~ alt_color,
-      !school %in% alt_color_list ~ color
+      .data$school %in% alt_color_list ~ alt_color,
+      !.data$school %in% alt_color_list ~ color
     ))
 
   # getting best logos
   teams <- teams |>
     dplyr::mutate(best_logo = dplyr::case_when(
-      school %in% alt_logo_list ~ logo_2,
-      !school %in% alt_logo_list ~ logo
+      .data$school %in% alt_logo_list ~ logo_2,
+      !.data$school %in% alt_logo_list ~ logo
     ))
 
   teams <- teams |>
-    dplyr::arrange(school) |>
-    dplyr::select(school, latitude, longitude, best_color, best_logo) |>
-    dplyr::rename(identifier = school,
-                  lat = latitude,
-                  lng = longitude,
-                  color = best_color,
-                  image = best_logo)
+    dplyr::arrange(.data$school) |>
+    dplyr::select(.data$school,
+                  .data$latitude,
+                  .data$longitude,
+                  .data$best_color,
+                  .data$best_logo) |>
+    dplyr::rename(identifier = .data$school,
+                  lat = .data$latitude,
+                  lng = .data$longitude,
+                  color = .data$best_color,
+                  image = .data$best_logo)
 
   return(teams)
 

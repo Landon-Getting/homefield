@@ -4,18 +4,18 @@
 \alias{get_cfb_undefeated}
 \title{get_cfb_undefeated}
 \usage{
-get_cfb_undefeated(season = 2021, week = 6)
+get_cfb_undefeated(season, week)
 }
 \arguments{
-\item{season}{(Integer required): Year, 4 digit format (YYYY), ~1897 to present}
+\item{season}{(Integer required): Year, 4 digit format (YYYY), ~1897 to present.}
 
-\item{week}{(Integer required): Week - values from 1-15, 1-14 for seasons pre-playoff (i.e. 2013 or eariler)}
+\item{week}{(Integer required): Week, values from 1-15, 1-14 for seasons pre-playoff (i.e. 2013 or eariler).}
 }
 \value{
-Returns data frame prepared for territorymap()
+Returns data frame prepared for territorymap().
 }
 \description{
-Provides a data frame with information regarding undefeated D1 College Football teams. The data frame is ready for plotting with territorymaps().
+Provides a data frame with the undefeated D1 College Football teams during a particular season and week. The data frame is ready for plotting with territorymaps().
 }
 \examples{
 get_cfb_undefeated(season = 2016, week = 8)

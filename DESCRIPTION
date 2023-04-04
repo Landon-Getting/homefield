@@ -23,6 +23,7 @@ Imports:
   htmlwidgets, 
   webshot2, 
   ggplot2, 
+  ggimage,
   magick, 
   cli, 
   sf,
@@ -30,7 +31,9 @@ Imports:
   ggthemes,
   png,
   tibble,
-  tidyr
+  tidyr,
+  rlang,
+  grDevices
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/Landon-Getting/territorymap

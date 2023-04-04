@@ -1,20 +1,36 @@
 #' territorymap
 #'
-#' @param x data frame with specific columns TBD
-#' @param threshold area in km^2 for secondary logos
-#' @param output_file file path for output .png
+#' @param x Data frame created by other territorymap functions or including the following columns:\cr
+#' \cr
+#' \strong{identifier} - identifies each element (ex. school name - Iowa State, Minnesota, Bowling Green)\cr
+#' \cr
+#' \strong{lat} - latitude of element\cr
+#' \cr
+#' \strong{lng} - longitude of element\cr
+#' \cr
+#' \strong{color} - hexadecimal color to fill element territories (ex. #cfab7a)\cr
+#' \cr
+#' \strong{image} - image url or local file path to be placed on at least one territory and all territories over the threshold.\cr
+#' \cr
+#' Columns must also be of equal length and match the specified names exactly.
+#' @param threshold (Numeric required): If territory above threshold (area in km^2), a secondary logo will be generated for that territory. \emph{Defaults to 10,000 km^2.}
+#' @param output_file (String required): Local file path ending in \emph{.png}.
+#' @param title (String required): Title of the map.
+#' @param credit (String required): Name of the map author.
 #'
+#' @importFrom rlang .data
 #'
 #' @export
 #'
 #' @examples
-#' cfb_data <- get_cfb_undefeated(season = 2016, week = 6)
-#' territorymap(x = cfb_data, output_file = "C:/Users/darthvader/Downloads")
-territorymap <- function(x, threshold = 10000, output_file, title = "Territory Map", credit){
+#' \dontrun{cfb_data <- get_cfb_undefeated(season = 2016, week = 6)}
+#' \dontrun{territorymap(x = cfb_data, output_file = paste0(getwd(),"/territorymap_example.png"))}
+territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit = NULL){
 
   # TO DO
   # improve logo size generation
   # what if no undefeated
+  # create get_cfb_imperialism()
 
   # Performing input checks ---------------------------------------------------
 
@@ -92,43 +108,49 @@ territorymap <- function(x, threshold = 10000, output_file, title = "Territory M
   }
 
   # Checking if title is valid
-  if (!is.character(title)) {
-    stop("title must be of type character.")
+  if(!missing(title)){
+    if (!is.character(title)) {
+      stop("title must be of type character.")
+    }
   }
 
   # Checking if credit is valid
-  if (!is.character(credit)) {
-    stop("credit must be of type character.")
+  if(!missing(credit)){
+    if (!is.character(credit)) {
+      stop("credit must be of type character.")
+    }
   }
 
   cli::cli_h1("Generating Territory Map...")
 
-  threshold = 10000
-
   # convert threshold from km^2 to m^2
   threshold <- threshold*1e6
 
+  input_df <- x
+
   input_df_location <- input_df |>
-    dplyr::select(identifier,lat,lng)
+    dplyr::select(.data$identifier,
+                  .data$lat,
+                  .data$lng)
 
   # converting lat/long to sf point object -------------------------------------
   input_df_location <-  sf::st_as_sf(input_df_location,
                                   coords = c("lng", "lat"),
                                   crs = 4326) |>
-    dplyr::rename(location = geometry)
+    dplyr::rename(location = .data$geometry)
 
   cli::cli_alert_info("Querying Map Data...")
 
-  states <- tigris::states(cb = TRUE) |>
-    dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |>
+  states <- tigris::states(cb = TRUE, progress_bar = FALSE) |>
+    dplyr::filter(!.data$STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |>
     tigris::shift_geometry() |>
     sf::st_transform("+proj=longlat +datum=WGS84") |>
     suppressMessages()
 
-  counties <- tigris::counties(cb = TRUE) |>
-    dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |> # filtering out territories
+  counties <- tigris::counties(cb = TRUE, progress_bar = FALSE) |>
+    dplyr::filter(!.data$STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |> # filtering out territories
     sf::st_transform("+proj=longlat +datum=WGS84") |> # Reproject to WGS84
-    dplyr::mutate(FIPS = paste0(STATEFP,COUNTYFP)) |> # add unique county identifier
+    dplyr::mutate(FIPS = paste0(.data$STATEFP,.data$COUNTYFP)) |> # add unique county identifier
     suppressMessages()
 
   counties$centroid <- sf::st_centroid(counties$geometry)
@@ -138,7 +160,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = "Territory M
 
   comparing_distances <- tidyr::expand_grid(input_df_location,
                                             counties |>
-                                              dplyr::select(FIPS, centroid) |>
+                                              dplyr::select(.data$FIPS, .data$centroid) |>
                                               sf::st_drop_geometry())
 
   comparing_distances$location <- sf::st_as_sf(comparing_distances$location)
@@ -149,21 +171,31 @@ territorymap <- function(x, threshold = 10000, output_file, title = "Territory M
                                                    by_element = TRUE)
 
   comparing_distances <- comparing_distances |>
-    dplyr::select(FIPS,identifier,distances) |>
-    dplyr::group_by(FIPS) |>
-    dplyr::slice(which.min(distances))
+    dplyr::select(.data$FIPS,
+                  .data$identifier,
+                  .data$distances) |>
+    dplyr::group_by(.data$FIPS) |>
+    dplyr::slice(which.min(.data$distances))
 
   # Create data frame for color mapping -----------------------------------------
   cli::cli_alert_info("Creating data frame for color mapping...")
 
   territory_map_df <- comparing_distances |>
-    dplyr::select(FIPS,identifier) |>
+    dplyr::select(.data$FIPS,
+                  .data$identifier) |>
     dplyr::left_join(counties |>
                        tigris::shift_geometry() |> # shift Alaska and Hawaii below
                        sf::st_transform("+proj=longlat +datum=WGS84") |>
-                       dplyr::select(FIPS, geometry), by = "FIPS", keep = FALSE) |>
+                       dplyr::select(.data$FIPS,
+                                     .data$geometry),
+                                     by = "FIPS",
+                                     keep = FALSE) |>
     dplyr::left_join(input_df |>
-                       dplyr::select(identifier,color,image), by = "identifier", keep = FALSE)
+                       dplyr::select(.data$identifier,
+                                     .data$color,
+                                     .data$image),
+                     by = "identifier",
+                     keep = FALSE)
 
   territory_map_df <- sf::st_as_sf(territory_map_df)
 
@@ -172,15 +204,20 @@ territorymap <- function(x, threshold = 10000, output_file, title = "Territory M
 
   # Apply the function to the example data frame
   counties_grouped <- territory_map_df |>
-    dplyr::group_by(identifier) |>
-    dplyr::summarise(geometry = suppressWarnings(sf::st_union(geometry,
+    dplyr::group_by(.data$identifier) |>
+    dplyr::summarise(geometry = suppressWarnings(sf::st_union(.data$geometry,
                                                               is_coverage = TRUE)))  # reduces calculation time
 
-  counties_grouped <- sf::st_cast(counties_grouped |> dplyr::select(identifier, geometry),
+  counties_grouped <- sf::st_cast(counties_grouped |>
+                                    dplyr::select(.data$identifier,
+                                                  .data$geometry),
                                   "MULTIPOLYGON")
 
-  counties_grouped <- sf::st_cast(counties_grouped |> dplyr::select(identifier, geometry),
-                                  "POLYGON") |> suppressWarnings()
+  counties_grouped <- sf::st_cast(counties_grouped |>
+                                    dplyr::select(.data$identifier,
+                                                  .data$geometry),
+                                  "POLYGON") |>
+                                  suppressWarnings()
 
   counties_grouped <- sf::st_as_sf(counties_grouped)
 
@@ -191,20 +228,21 @@ territorymap <- function(x, threshold = 10000, output_file, title = "Territory M
                   id = dplyr::row_number())
 
   largest_areas <- counties_grouped |>
-    dplyr::group_by(identifier) |>
-    dplyr::filter(area == max(area))
+    dplyr::group_by(.data$identifier) |>
+    dplyr::filter(.data$area == max(.data$area))
 
   above_threshold_areas <- counties_grouped |>
-    dplyr::group_by(identifier) |>
-    dplyr::filter(area > threshold)
+    dplyr::group_by(.data$identifier) |>
+    dplyr::filter(.data$area > threshold)
 
   image_areas <- dplyr::bind_rows(largest_areas, above_threshold_areas) |>
-    dplyr::distinct(id, .keep_all = TRUE) |>
-    dplyr::arrange(identifier) |>
-    dplyr::mutate(centroid = sf::st_centroid(geometry)) |>
-    dplyr::left_join(input_df |> dplyr::select(identifier, image),
+    dplyr::distinct(.data$id, .keep_all = TRUE) |>
+    dplyr::arrange(.data$identifier) |>
+    dplyr::mutate(centroid = sf::st_centroid(.data$geometry)) |>
+    dplyr::left_join(input_df |> dplyr::select(.data$identifier,
+                                               .data$image),
                      by = "identifier") |>
-    dplyr::arrange(identifier)
+    dplyr::arrange(.data$identifier)
 
   # Create logos for map --------------------------------------------------------
   cli::cli_alert_info("Creating logos for map...")
@@ -226,20 +264,26 @@ territorymap <- function(x, threshold = 10000, output_file, title = "Territory M
   # adding contrasting border apartment
   contrast_color <- function(hex_input) {
 
-    rgb.array <- col2rgb(hex_input)
+    rgb.array <- grDevices::col2rgb(hex_input)
     r <- (rgb.array[1] ^ 2) * .068
     g <- (rgb.array[2] ^ 2) * .691
     b <- (rgb.array[3] ^ 2) * .241
 
     brightness <- 255 - sqrt(r + g + b)
 
-    hex_output <- rgb(brightness, brightness, brightness, maxColorValue=255)
+    if(brightness > 80 & brightness < 128){
+      brightness <- 80
+    } else if(brightness > 128 & brightness < 240){
+      brightness <- 240
+    }
+
+    hex_output <- grDevices::rgb(brightness, brightness, brightness, maxColorValue=255)
 
     return(hex_output)
   }
 
   territory_map_df <- territory_map_df |>
-    dplyr::mutate(border_color = contrast_color(color))
+    dplyr::mutate(border_color = contrast_color(.data$color))
 
   # Reprojection
   epsg2163 <- leaflet::leafletCRS(
@@ -300,19 +344,32 @@ territorymap <- function(x, threshold = 10000, output_file, title = "Territory M
   h <- as.numeric(dim(img)[1])
   w <- as.numeric(dim(img)[2])
 
-  final_img <- ggplot2::ggplot(data = text_to_plot) +
+
+  if(is.null(credit)){
+    credit_text <- ""
+  } else{
+    credit_text <- paste0("Created by ",
+                          credit,
+                          " with the territorymap R package.")
+  }
+
+  if(is.null(title)){
+    title_text <- ""
+  } else{
+    title_text <- title
+  }
+
+  final_img <- ggplot2::ggplot() +
     ggplot2::annotation_raster(img, xmin = 0, xmax = 1, ymin = 0, ymax = 1) +
     ggplot2::geom_text(ggplot2::aes(x = 0.5,
                                     y = 0.9,
-                                    label = paste0(title)),
+                                    label = title_text),
                        size = 1500,
                        family = "Open Sans Extrabold",
                        fontface = "bold") +
     ggplot2::geom_text(ggplot2::aes(x = 0.5,
                                     y = 0.03,
-                                    label = paste0("Created by ",
-                                                   credit,
-                                                   " with the territorymap R package.")),
+                                    label = credit_text),
                        size = 700,
                        family = "Open Sans Extrabold") +
     # hex sticker

@@ -16,10 +16,27 @@ contrast_color <- function(hex_input) {
 
   brightness <- 255 - sqrt(r + g + b)
 
+  if(brightness > 80 & brightness < 128){
+    brightness <- 80
+  } else if(brightness > 128 & brightness < 240){
+    brightness <- 240
+  }
+
+  if(brightness > 128){
+    brightness <- 0
+  } else{
+    brightness <- 255
+  }
+
+
   hex_output <- rgb(brightness, brightness, brightness, maxColorValue=255)
 
   return(hex_output)
 }
+
+hex_input <-	"#00274c"
+brightness
+
 
 contrast_color <- function(hex_input) {
 
