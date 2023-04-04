@@ -9,7 +9,7 @@
 #'
 #' @examples
 #' get_cfb_undefeated(season = 2016, week = 8)
-get_cfb_undefeated <- function(season = 2021, week = 6){
+get_cfb_undefeated <- function(season, week){
 
   season <- as.numeric(season)
   week <- as.numeric(week)
@@ -37,25 +37,11 @@ get_cfb_undefeated <- function(season = 2021, week = 6){
     for(week_number in 1:week){
 
       if(week_number == 1){
-        game_info <-  tryCatch({
-                        cfbfastR::cfbd_game_info(year = season, week = week_number)
-                      },
-                      error = function(e) {
-                        message(paste0("Week ", week, " had missing data."))
-                      }, warning = function(w) {
-                        message(paste0("Week ", week, " had missing data."))
-                      })
+        game_info <- cfbfastR::cfbd_game_info(year = season, week = week_number)
 
       } else{
-        game_info <- rbind(game_info,
-                           tryCatch({
-                             cfbfastR::cfbd_game_info(year = season, week = week_number)
-                           },
-                           error = function(e) {
-                             message(paste0("Week ", week, " had missing data."))
-                           }, warning = function(w) {
-                             message(paste0("Week ", week, " had missing data."))
-                           }))
+        game_info <- rbind(game_info, cfbfastR::cfbd_game_info(year = season,
+                                                               week = week_number))
       }
     }
 
@@ -85,7 +71,6 @@ get_cfb_undefeated <- function(season = 2021, week = 6){
     "NC State",
     "North Texas",
     "Northwestern",
-    "San Diego State",
     "SMU",
     "Temple",
     "Tennessee",
@@ -96,7 +81,8 @@ get_cfb_undefeated <- function(season = 2021, week = 6){
     "USC",
     "Utah State",
     "Wisconsin",
-    "Ohio State")
+    "Ohio State",
+    "Purdue")
 
   alt_logo_list = c(
     "Air Force",
@@ -114,11 +100,11 @@ get_cfb_undefeated <- function(season = 2021, week = 6){
     "Michigan",
     "Michigan State",
     "Nevada",
-    "Notre Dame",
     'Oklahoma',
     "Oregon",
     "Pittsburgh",
     "Rice",
+    "San Diego State",
     "TCU",
     "Texas",
     "Texas A&M",

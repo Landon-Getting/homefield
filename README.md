@@ -2,6 +2,7 @@
 output:
   html_document: default
 ---
+
 # territorymap
 Creates territory maps to visualize representation by region.
 

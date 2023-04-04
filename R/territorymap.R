@@ -13,7 +13,6 @@
 territorymap <- function(x, threshold = 10000, output_file, title = "Territory Map", credit){
 
   # TO DO
-  # scale grey border color of county polylines based on the team color darkness
   # improve logo size generation
   # what if no undefeated
 
@@ -105,12 +104,9 @@ territorymap <- function(x, threshold = 10000, output_file, title = "Territory M
   cli::cli_h1("Generating Territory Map...")
 
   threshold = 10000
-  output_file = "C:/Users/lwget/Downloads/territorymap.png"
 
   # convert threshold from km^2 to m^2
   threshold <- threshold*1e6
-
-  input_df <- x
 
   input_df_location <- input_df |>
     dplyr::select(identifier,lat,lng)
@@ -227,6 +223,23 @@ territorymap <- function(x, threshold = 10000, output_file, title = "Territory M
   image_areas <- sf::st_drop_geometry(image_areas)
   image_areas <- sf::st_as_sf(image_areas)
 
+  # adding contrasting border apartment
+  contrast_color <- function(hex_input) {
+
+    rgb.array <- col2rgb(hex_input)
+    r <- (rgb.array[1] ^ 2) * .068
+    g <- (rgb.array[2] ^ 2) * .691
+    b <- (rgb.array[3] ^ 2) * .241
+
+    brightness <- 255 - sqrt(r + g + b)
+
+    hex_output <- rgb(brightness, brightness, brightness, maxColorValue=255)
+
+    return(hex_output)
+  }
+
+  territory_map_df <- territory_map_df |>
+    dplyr::mutate(border_color = contrast_color(color))
 
   # Reprojection
   epsg2163 <- leaflet::leafletCRS(
@@ -260,7 +273,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = "Territory M
                         label = ~identifier,
                         icon = logoIcons) |>
     leaflet::addPolylines(data = territory_map_df,
-                          color = "#cfcfcf",
+                          color = ~border_color,
                           weight = 0.25,
                           smoothFactor = 0,
                           opacity = 0.75)  |>
@@ -334,10 +347,3 @@ territorymap <- function(x, threshold = 10000, output_file, title = "Territory M
   cli::cli_alert_info("Finished! :)")
 
 }
-
-
-
-
-
-
-

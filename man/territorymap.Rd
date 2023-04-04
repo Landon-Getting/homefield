@@ -4,7 +4,13 @@
 \alias{territorymap}
 \title{territorymap}
 \usage{
-territorymap(x, threshold = 10000, output_file)
+territorymap(
+  x,
+  threshold = 10000,
+  output_file,
+  title = "Territory Map",
+  credit
+)
 }
 \arguments{
 \item{x}{data frame with specific columns TBD}

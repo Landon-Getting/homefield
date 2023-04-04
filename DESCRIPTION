@@ -15,7 +15,22 @@ Maintainer: Landon Getting <landongetting@gmail.com>
 Description: Creates territory maps to visualize representation by region.
     Use four spaces when indenting paragraphs within the Description.
 License: MIT + file LICENSE
-Imports: leaflet, magrittr, tigris, dplyr, htmlwidgets, webshot2, ggplot2, magick, cli, sf
+Imports: 
+  leaflet,
+  magrittr, 
+  tigris, 
+  dplyr,
+  htmlwidgets, 
+  webshot2, 
+  ggplot2, 
+  magick, 
+  cli, 
+  sf,
+  cfbfastR,
+  ggthemes,
+  png,
+  tibble,
+  tidyr
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/Landon-Getting/territorymap
