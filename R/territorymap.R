@@ -1,5 +1,7 @@
 #' territorymap
 #'
+#' @description Generates a territory map and saves as a .png file at a specified location.
+#'
 #' @param x Data frame created by other territorymap functions or including the following columns:\cr
 #' \cr
 #' \strong{identifier} - identifies each element (ex. school name - Iowa State, Minnesota, Bowling Green).\cr
@@ -150,7 +152,6 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
   counties <- tigris::counties(cb = TRUE, progress_bar = FALSE) |>
     dplyr::filter(!.data$STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |> # filtering out territories
     sf::st_transform("+proj=longlat +datum=WGS84") |> # Reproject to WGS84
-    dplyr::mutate(FIPS = paste0(.data$STATEFP,.data$COUNTYFP)) |> # add unique county identifier
     suppressMessages()
 
   counties$centroid <- sf::st_centroid(counties$geometry)
@@ -160,7 +161,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
 
   comparing_distances <- tidyr::expand_grid(input_df_location,
                                             counties |>
-                                              dplyr::select(.data$FIPS, .data$centroid) |>
+                                              dplyr::select(.data$GEOID, .data$centroid) |>
                                               sf::st_drop_geometry())
 
   comparing_distances$location <- sf::st_as_sf(comparing_distances$location)
@@ -171,24 +172,24 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
                                                    by_element = TRUE)
 
   comparing_distances <- comparing_distances |>
-    dplyr::select(.data$FIPS,
+    dplyr::select(.data$GEOID,
                   .data$identifier,
                   .data$distances) |>
-    dplyr::group_by(.data$FIPS) |>
+    dplyr::group_by(.data$GEOID) |>
     dplyr::slice(which.min(.data$distances))
 
   # Create data frame for color mapping -----------------------------------------
   cli::cli_alert_info("Creating data frame for color mapping...")
 
   territory_map_df <- comparing_distances |>
-    dplyr::select(.data$FIPS,
+    dplyr::select(.data$GEOID,
                   .data$identifier) |>
     dplyr::left_join(counties |>
                        tigris::shift_geometry() |> # shift Alaska and Hawaii below
                        sf::st_transform("+proj=longlat +datum=WGS84") |>
-                       dplyr::select(.data$FIPS,
+                       dplyr::select(.data$GEOID,
                                      .data$geometry),
-                                     by = "FIPS",
+                                     by = "GEOID",
                                      keep = FALSE) |>
     dplyr::left_join(input_df |>
                        dplyr::select(.data$identifier,

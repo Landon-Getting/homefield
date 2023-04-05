@@ -2,5 +2,6 @@
 
 export(get_cfb_imperialism)
 export(get_cfb_undefeated)
+export(get_map_stats)
 export(territorymap)
 importFrom(rlang,.data)

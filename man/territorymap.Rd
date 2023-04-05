@@ -30,7 +30,7 @@ Columns must also be of equal length and match the specified names exactly.}
 \item{credit}{(String required): Name of the map author.}
 }
 \description{
-territorymap
+Generates a territory map and saves as a .png file at a specified location.
 }
 \examples{
 \dontrun{cfb_data <- get_cfb_undefeated(season = 2016, week = 6)}
