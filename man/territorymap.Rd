@@ -9,13 +9,13 @@ territorymap(x, threshold = 10000, output_file, title = NULL, credit = NULL)
 \arguments{
 \item{x}{Data frame created by other territorymap functions or including the following columns:\cr
 \cr
-\strong{identifier} - identifies each element (ex. school name - Iowa State, Minnesota, Bowling Green)\cr
+\strong{identifier} - identifies each element (ex. school name - Iowa State, Minnesota, Bowling Green).\cr
 \cr
-\strong{lat} - latitude of element\cr
+\strong{lat} - latitude of element.\cr
 \cr
-\strong{lng} - longitude of element\cr
+\strong{lng} - longitude of element.\cr
 \cr
-\strong{color} - hexadecimal color to fill element territories (ex. #cfab7a)\cr
+\strong{color} - hexadecimal color to fill element territories (ex. #cfab7a).\cr
 \cr
 \strong{image} - image url or local file path to be placed on at least one territory and all territories over the threshold.\cr
 \cr
