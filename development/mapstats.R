@@ -2,6 +2,7 @@
 # get temporal map stats
 # use case - get map stats for each week of imperialism up to week 6
 
+
 week = 4
 year = 2022
 
@@ -36,3 +37,31 @@ ggplot2::ggplot(data = plot_stats, ggplot2::aes(x = week, y = pop, color = ident
   ggplot2::geom_line() +
   ggplot2::labs(x = "Week", y = "Population") +
   ggplot2::theme_bw()
+
+
+# temporal example
+x_input <- list(get_cfb_undefeated(season = 2021, week = 0),
+                 get_cfb_undefeated(season = 2021, week = 1),
+                 get_cfb_undefeated(season = 2021, week = 2),
+                 get_cfb_undefeated(season = 2021, week = 3),
+                 get_cfb_undefeated(season = 2021, week = 4))
+
+# week 0 through 4
+temporal_input <- c(0,
+                    1,
+                    2,
+                    3,
+                    4)
+
+temporal_stats <- territorymap::get_map_stats(x = x_input, temporal = temporal_input)
+
+
+
+
+
+
+
+
+
+
+

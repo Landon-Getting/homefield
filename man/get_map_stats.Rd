@@ -4,7 +4,7 @@
 \alias{get_map_stats}
 \title{get_map_stats}
 \usage{
-get_map_stats(x, continental = TRUE)
+get_map_stats(x, continental = TRUE, temporal)
 }
 \arguments{
 \item{x}{Data frame created by other territorymap functions or including the following columns:\cr
@@ -17,7 +17,13 @@ get_map_stats(x, continental = TRUE)
 
 Columns must also be of equal length and match the specified names exactly.}
 
-\item{continental}{(Boolean required): If TRUE (default), only considers the continental United States. If FALSE, also considers Alaska and Hawaii.}
+\item{continental}{(Boolean required): If TRUE (default), only considers the continental United States.
+If FALSE, also considers Alaska and Hawaii.}
+
+\item{temporal}{(Vector required): If argument declared with a vector, x must be a list of data frames.
+The length of the vector supplied must equal the number of data frames.
+The vector should contain temporal values representing the respective time of each data frame.
+This will alter the returned data frame to include an extra column named 'time' with the supplied temporal information in a tidy format.}
 }
 \description{
 Returns a data frame with summary statistics for each identifier based on their map territory. \cr
@@ -36,5 +42,23 @@ Output data frame includes four summary statistics:\cr
 \strong{pop} - Population that resides within territory controlled by identifier.\cr
 }
 \examples{
-\dontrun{cfb_map_stats <- get_map_stats(get_cfb_undefeated(season = 2021, week = 6))}
+\dontrun{
+# standard example
+cfb_map_stats <- get_map_stats(get_cfb_undefeated(season = 2021, week = 6))
+
+# temporal example
+ x_input <- list(get_cfb_undefeated(season = 2021, week = 0),
+                 get_cfb_undefeated(season = 2021, week = 1),
+                 get_cfb_undefeated(season = 2021, week = 2),
+                 get_cfb_undefeated(season = 2021, week = 3),
+                 get_cfb_undefeated(season = 2021, week = 4))
+
+ # week 0 through 4
+temporal_input <- c(0,
+                     1,
+                     2,
+                     3,
+                     4)
+ temporal_stats <- territorymap::get_map_stats(x = x_input, temporal = temporal_input)
+}
 }
