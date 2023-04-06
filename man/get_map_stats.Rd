@@ -4,7 +4,7 @@
 \alias{get_map_stats}
 \title{get_map_stats}
 \usage{
-get_map_stats(x, continental = TRUE, temporal)
+get_map_stats(x, continental = TRUE, temporal, keep_max = FALSE)
 }
 \arguments{
 \item{x}{Data frame created by other territorymap functions or including the following columns:\cr
@@ -23,7 +23,12 @@ If FALSE, also considers Alaska and Hawaii.}
 \item{temporal}{(Vector required): If argument declared with a vector, x must be a list of data frames.
 The length of the vector supplied must equal the number of data frames.
 The vector should contain temporal values representing the respective time of each data frame.
+\cr
 This will alter the returned data frame to include an extra column named 'time' with the supplied temporal information in a tidy format.}
+
+\item{keep_max}{(Boolean required:) In some cases, a identifier may no longer be present in future temporal instances.
+\cr If keep_max = TRUE, identifiers will be generated for future instances and their statistics will match the instance where they were most recently present.
+\cr If keep_max = FALSE (default), identifiers will be generated in future instances but their statistics will be set to 0.}
 }
 \description{
 Returns a data frame with summary statistics for each identifier based on their map territory. \cr
@@ -59,6 +64,7 @@ temporal_input <- c(0,
                      2,
                      3,
                      4)
- temporal_stats <- territorymap::get_map_stats(x = x_input, temporal = temporal_input)
+
+ map_stats <- territorymap::get_map_stats(x = x_input, temporal = temporal_input)
 }
 }

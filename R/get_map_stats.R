@@ -31,7 +31,13 @@
 #' @param temporal (Vector required): If argument declared with a vector, x must be a list of data frames.
 #' The length of the vector supplied must equal the number of data frames.
 #' The vector should contain temporal values representing the respective time of each data frame.
+#' \cr
 #' This will alter the returned data frame to include an extra column named 'time' with the supplied temporal information in a tidy format.
+#'
+#'
+#' @param keep_max (Boolean required:) In some cases, a identifier may no longer be present in future temporal instances.
+#' \cr If keep_max = TRUE, identifiers will be generated for future instances and their statistics will match the instance where they were most recently present.
+#' \cr If keep_max = FALSE (default), identifiers will be generated in future instances but their statistics will be set to 0.
 #'
 #' @importFrom rlang .data
 #'
@@ -56,9 +62,22 @@
 #'                      3,
 #'                      4)
 #'
-#'  temporal_stats <- territorymap::get_map_stats(x = x_input, temporal = temporal_input)
+#'  map_stats <- territorymap::get_map_stats(x = x_input, temporal = temporal_input)
 #'}
-get_map_stats <- function(x, continental = TRUE, temporal){
+get_map_stats <- function(x, continental = TRUE, temporal, keep_max = FALSE){
+
+  # if temporal present and not logical, return error
+  if(!missing(temporal) & !is.logical(temporal)){
+    stop("temporal must be a boolean value.")
+  }
+
+  if(!missing(keep_max) & !is.logical(keep_max)){
+    stop("temporal must be a boolean value.")
+  }
+
+  if(!missing(keep_max) & missing(temporal)){
+    warning("The keep_max argument will only be used if the temporal argument is also used.")
+  }
 
   if(!is.logical(continental)){
     stop("Continental must be a boolean value.")
@@ -200,6 +219,11 @@ get_map_stats <- function(x, continental = TRUE, temporal){
       stop("temporal must be a vector.")
     }
 
+    # check that temporal has unique values
+    if(length(temporal) != length(unique(temporal))){
+      stop("temporal must have unique values.")
+    }
+
     # performing checks on each data frame
     for(i in 1:length(x)){
       input_checks(x[[i]])
@@ -223,6 +247,52 @@ get_map_stats <- function(x, continental = TRUE, temporal){
       }
 
     }
+
+    # if not present, duplicate most recent instance to the future instance(s)
+    for(i in 1:length(temporal)){
+
+      if(i == 1){
+        starting_identifiers <- dplyr::filter(map_stats, time == temporal[[i]])[[1]]
+
+      } else{
+
+        current_identifiers <- dplyr::filter(map_stats, time == temporal[[i]])[[1]]
+
+        # Find the missing elements in the current identifiers
+        missing_identifiers <- setdiff(starting_identifiers, current_identifiers)
+
+        if(keep_max == TRUE){
+
+          # get missing rows
+          missing_rows <- map_stats |>
+            dplyr::filter(time == temporal[[i - 1]],
+                          identifier %in% missing_identifiers) |>
+            dplyr::mutate(time = temporal[[i]])
+
+          # Find the most recent row of each identifier and rbind with current time
+          map_stats <- rbind(map_stats,
+                                  missing_rows)
+
+        } else{
+
+          # get missing rows
+          missing_rows <- map_stats |>
+            dplyr::filter(time == temporal[[i - 1]],
+                          identifier %in% missing_identifiers) |>
+            dplyr::mutate(land = 0,
+                          water = 0,
+                          domain = 0,
+                          pop = 0,
+                          time = temporal[[i]])
+
+          # Find the most recent row of each identifier and rbind with current time
+          map_stats <- rbind(map_stats,
+                                  missing_rows)
+        }
+      }
+    }
+
+    map_stats <- map_stats |> dplyr::arrange(time, identifier)
 
   } else { # temporal argument NOT provided
     input_checks(x)
