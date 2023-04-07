@@ -4,7 +4,7 @@
 \alias{get_map_stats}
 \title{get_map_stats}
 \usage{
-get_map_stats(x, continental = TRUE, temporal, keep_max = FALSE)
+get_map_stats(x, continental = TRUE, temporal = NULL, keep_max = FALSE)
 }
 \arguments{
 \item{x}{Data frame created by other territorymap functions or including the following columns:\cr

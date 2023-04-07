@@ -64,11 +64,11 @@
 #'
 #'  map_stats <- territorymap::get_map_stats(x = x_input, temporal = temporal_input)
 #'}
-get_map_stats <- function(x, continental = TRUE, temporal, keep_max = FALSE){
+get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FALSE){
 
   # if temporal present and not logical, return error
-  if(!missing(temporal) & !is.logical(temporal)){
-    stop("temporal must be a boolean value.")
+  if(!missing(temporal) & !is.vector(temporal)){
+    stop("temporal must be a vector.")
   }
 
   if(!missing(keep_max) & !is.logical(keep_max)){
