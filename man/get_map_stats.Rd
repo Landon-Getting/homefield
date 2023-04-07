@@ -4,38 +4,48 @@
 \alias{get_map_stats}
 \title{get_map_stats}
 \usage{
-get_map_stats(x, continental = TRUE, temporal = NULL, keep_max = FALSE)
+get_map_stats(
+  x,
+  continental = TRUE,
+  temporal = NULL,
+  keep_max = FALSE,
+  keep_visuals = FALSE
+)
 }
 \arguments{
-\item{x}{Data frame created by other territorymap functions or including the following columns:\cr
+\item{x}{(Required): Data frame created by other territorymap functions or including the following columns:\cr
 \cr
 \strong{identifier} - identifies each element (ex. school name - Iowa State, Minnesota, Bowling Green).\cr
 \cr
 \strong{lat} - latitude of element.\cr
 \cr
 \strong{lng} - longitude of element.\cr
-
+\cr
+\strong{color} - \emph{(Optional:)} hexadecimal color (ex. #cfab7a) useful for plotting with territorymap(). Set keep_visuals = TRUE to include this column in the returned data frame.\cr
+\cr
+\strong{image} - \emph{(Optional:)}image url or local file path useful for plotting with territorymap(). Set keep_visuals = TRUE to include this column in the returned data frame.\cr
+\cr
 Columns must also be of equal length and match the specified names exactly.}
 
-\item{continental}{(Boolean required): If TRUE (default), only considers the continental United States.
-If FALSE, also considers Alaska and Hawaii.}
+\item{continental}{(Optional - Boolean required): \cr
+\cr If TRUE (default), only considers the continental United States.\cr
+\cr If FALSE, also considers Alaska and Hawaii.}
 
-\item{temporal}{(Vector required): If argument declared with a vector, x must be a list of data frames.
-The length of the vector supplied must equal the number of data frames.
-The vector should contain temporal values representing the respective time of each data frame.
-\cr
-This will alter the returned data frame to include an extra column named 'time' with the supplied temporal information in a tidy format.}
+\item{temporal}{(Optional - Vector of numeric values required): This will alter the returned data frame to include an extra column named 'time' with the supplied temporal information in a tidy format.\cr
+\cr The vector should contain temporal values representing the respective time of each data frame. If argument declared with a vector, x must be a list of data frames.
+The length of the vector supplied must equal the number of data frames in x.}
 
-\item{keep_max}{(Boolean required:) In some cases, a identifier may no longer be present in future temporal instances.
-\cr If keep_max = TRUE, identifiers will be generated for future instances and their statistics will match the instance where they were most recently present.
-\cr If keep_max = FALSE (default), identifiers will be generated in future instances but their statistics will be set to 0.}
+\item{keep_max}{(Optional - Boolean required:) In some cases, a identifier may no longer be present in future temporal instances.\cr
+\cr If keep_max = TRUE, identifiers will be generated for future instances and their statistics will match the instance where they were most recently present.\cr
+\cr If keep_max = FALSE (default), identifiers will be generated in future instances but their statistics will be set to 0.
+\cr If keep_max = NULL, identifiers will NOT be generated in future instances where they do not appear already.}
+
+\item{keep_visuals}{(Optional - Boolean required:) If x has color and image columns present,
+keep_visuals can be used to discard or keep these columns in the returned data frame.\cr
+\cr If keep_visuals = TRUE, the columns will be kept.\cr
+\cr If keep_visuals = FALSE (default), the columns will be removed.}
 }
-\description{
-Returns a data frame with summary statistics for each identifier based on their map territory. \cr
-Note that this function requires a CENSUS API Key.
-Follow the directions \href{https://walker-data.com/tidycensus/reference/census_api_key.html}{here}
-to receive a key. \cr
-\cr
+\value{
 Output data frame includes four summary statistics:\cr
 \cr
 \strong{land} - Total land area area (in square meters) within territory controlled by identifier.\cr
@@ -45,6 +55,12 @@ Output data frame includes four summary statistics:\cr
 \strong{domain} - Sum of land and water area (in square meters) within territory controlled by identifier.\cr
 \cr
 \strong{pop} - Population that resides within territory controlled by identifier.\cr
+}
+\description{
+Returns a data frame with summary statistics for each identifier based on their map territory. \cr
+\cr \strong{This function requires a CENSUS API Key.}
+Follow the directions \href{https://walker-data.com/tidycensus/reference/census_api_key.html}{here}
+to receive a key.
 }
 \examples{
 \dontrun{

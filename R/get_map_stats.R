@@ -1,10 +1,10 @@
 #' get_map_stats
 #' @description Returns a data frame with summary statistics for each identifier based on their map territory. \cr
-#' Note that this function requires a CENSUS API Key.
+#' \cr \strong{This function requires a CENSUS API Key.}
 #' Follow the directions \href{https://walker-data.com/tidycensus/reference/census_api_key.html}{here}
-#' to receive a key. \cr
-#' \cr
-#' Output data frame includes four summary statistics:\cr
+#' to receive a key.
+#'
+#' @returns Output data frame includes four summary statistics:\cr
 #' \cr
 #' \strong{land} - Total land area area (in square meters) within territory controlled by identifier.\cr
 #' \cr
@@ -15,29 +15,37 @@
 #' \strong{pop} - Population that resides within territory controlled by identifier.\cr
 #'
 #'
-#' @param x Data frame created by other territorymap functions or including the following columns:\cr
+#' @param x (Required): Data frame created by other territorymap functions or including the following columns:\cr
 #' \cr
 #' \strong{identifier} - identifies each element (ex. school name - Iowa State, Minnesota, Bowling Green).\cr
 #' \cr
 #' \strong{lat} - latitude of element.\cr
 #' \cr
 #' \strong{lng} - longitude of element.\cr
-#'
+#' \cr
+#' \strong{color} - \emph{(Optional:)} hexadecimal color (ex. #cfab7a) useful for plotting with territorymap(). Set keep_visuals = TRUE to include this column in the returned data frame.\cr
+#' \cr
+#' \strong{image} - \emph{(Optional:)}image url or local file path useful for plotting with territorymap(). Set keep_visuals = TRUE to include this column in the returned data frame.\cr
+#' \cr
 #' Columns must also be of equal length and match the specified names exactly.
 #'
-#' @param continental (Boolean required): If TRUE (default), only considers the continental United States.
-#' If FALSE, also considers Alaska and Hawaii.
+#' @param continental (Optional - Boolean required): \cr
+#' \cr If TRUE (default), only considers the continental United States.\cr
+#' \cr If FALSE, also considers Alaska and Hawaii.
 #'
-#' @param temporal (Vector required): If argument declared with a vector, x must be a list of data frames.
-#' The length of the vector supplied must equal the number of data frames.
-#' The vector should contain temporal values representing the respective time of each data frame.
-#' \cr
-#' This will alter the returned data frame to include an extra column named 'time' with the supplied temporal information in a tidy format.
+#' @param temporal (Optional - Vector of numeric values required): This will alter the returned data frame to include an extra column named 'time' with the supplied temporal information in a tidy format.\cr
+#' \cr The vector should contain temporal values representing the respective time of each data frame. If argument declared with a vector, x must be a list of data frames.
+#' The length of the vector supplied must equal the number of data frames in x.
 #'
-#'
-#' @param keep_max (Boolean required:) In some cases, a identifier may no longer be present in future temporal instances.
-#' \cr If keep_max = TRUE, identifiers will be generated for future instances and their statistics will match the instance where they were most recently present.
+#' @param keep_max (Optional - Boolean required:) In some cases, a identifier may no longer be present in future temporal instances.\cr
+#' \cr If keep_max = TRUE, identifiers will be generated for future instances and their statistics will match the instance where they were most recently present.\cr
 #' \cr If keep_max = FALSE (default), identifiers will be generated in future instances but their statistics will be set to 0.
+#'\cr If keep_max = NULL, identifiers will NOT be generated in future instances where they do not appear already.
+#'
+#' @param keep_visuals (Optional - Boolean required:) If x has color and image columns present,
+#' keep_visuals can be used to discard or keep these columns in the returned data frame.\cr
+#' \cr If keep_visuals = TRUE, the columns will be kept.\cr
+#' \cr If keep_visuals = FALSE (default), the columns will be removed.
 #'
 #' @importFrom rlang .data
 #'
@@ -64,11 +72,11 @@
 #'
 #'  map_stats <- territorymap::get_map_stats(x = x_input, temporal = temporal_input)
 #'}
-get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FALSE){
+get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FALSE, keep_visuals = FALSE){
 
-  # if temporal present and not logical, return error
-  if(!missing(temporal) & !is.vector(temporal)){
-    stop("temporal must be a vector.")
+  # if temporal present and not a numeric vector, return error
+  if(!missing(temporal) & !is.vector(temporal) & !is.numeric(temporal)){
+    stop("temporal must be a numeric vector.")
   }
 
   if(!missing(keep_max) & !is.logical(keep_max)){
@@ -91,6 +99,9 @@ get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FAL
 
   # input data checks ----------------------------------------------------------
   input_checks <- function(x){
+
+    visual_check = FALSE
+
     # setting expected column names
     expected_cols <- c("identifier",
                        "lat",
@@ -124,11 +135,44 @@ get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FAL
     if (!all(grepl(long_regex, x$lng, ignore.case = TRUE))) {
       stop("x must contain a lng column with valid longitudes")
     }
+
+    # keep_visuals = TRUE, check the visuals
+    if(keep_visuals == TRUE){
+
+      if(!"color" %in% colnames(x) | !"image" %in% colnames(x)){
+        stop("color and image columns must be present in x since keep_visuals = TRUE.")
+      }
+
+      # Defining a regular expression for matching valid hex color codes
+      hex_regex <- "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+
+      # Checking if the color column contains valid hex color codes
+      if (!all(grepl(hex_regex, x$color))) {
+        warning("x should contain a color column with valid colors in hexadecimal format.")
+      }
+
+      # https://stackoverflow.com/questions/52911812/check-if-url-exists-in-r
+      # creating url checker for image column
+      valid_url <- function(url_in,t=2){
+        con <- url(url_in)
+        check <- suppressWarnings(try(open.connection(con,open="rt",timeout=t),silent=T)[1])
+        suppressWarnings(try(close.connection(con),silent=T))
+        ifelse(is.null(check),TRUE,FALSE)
+      }
+
+      # checking image column for valid url or file paths
+      if(!(all(sapply(x$image,valid_url)) | (all(dir.exists(x$image)) & all(file.access(x$image, mode = 4))))) {
+        warning("x should contain an image column with valid urls or accessible local file paths.")
+      }
+
+      visual_check = TRUE
+    }
+
+    return(visual_check)
+
   }
 
-  generate_stats <- function(x){
-
-    input_df <- x
+  generate_stats <- function(input_df, visual_check){
 
     input_df_location <- input_df |>
       dplyr::select(.data$identifier,
@@ -195,14 +239,25 @@ get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FAL
                                          by = "GEOID")
 
     # Calculating map stats  ---------------------------------------------------
-    return(
-      territory_map_df |>
+
+    territory_map_df <- territory_map_df |>
       dplyr::group_by(.data$identifier) |>
       dplyr::summarise(land = sum(ALAND, na.rm = TRUE),
                        water = sum(AWATER, na.rm = TRUE),
                        domain = sum(ALAND, na.rm = TRUE) + sum(AWATER, na.rm = TRUE),
                        pop = sum(population, na.rm = TRUE))
-      )
+
+    # keep_visuals = TRUE and checks pass, add color and image back in
+    if(visual_check == TRUE){
+      territory_map_df <- dplyr::left_join(territory_map_df,
+                                           input_df |> dplyr::select(identifier,
+                                                              color,
+                                                              image),
+                                           by = "identifier")
+    }
+
+
+    return(territory_map_df)
   }
 
   # temporal? ----------------------------------------------------------------
@@ -224,25 +279,23 @@ get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FAL
       stop("temporal must have unique values.")
     }
 
-    # performing checks on each data frame
-    for(i in 1:length(x)){
-      input_checks(x[[i]])
-    }
 
     for(i in 1:length(x)){
 
       alert_text <- paste0("Getting stats for data frame ",i,".")
       cli::cli_alert_info(alert_text)
+      visual_check <- input_checks(x[[i]])
 
       if(i == 1){
 
-        map_stats <- generate_stats(x[[i]]) |>
+
+        map_stats <- generate_stats(x[[i]], visual_check) |>
                         dplyr::mutate(time = temporal[[i]])
 
       } else{
 
         map_stats <- rbind(map_stats,
-                           generate_stats(x[[i]]) |>
+                           generate_stats(x[[i]], visual_check) |>
                               dplyr::mutate(time = temporal[[i]]))
       }
 
@@ -294,9 +347,12 @@ get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FAL
 
     map_stats <- map_stats |> dplyr::arrange(time, identifier)
 
+    # removes duplicate rows for when identifier has multiple instances
+    map_stats <- map_stats[!duplicated(map_stats[c("identifier","time")]),]
+
   } else { # temporal argument NOT provided
-    input_checks(x)
-    map_stats <- generate_stats(x)
+    visual_check <- input_checks(x)
+    map_stats <- generate_stats(x, visual_check)
   }
 
   return(map_stats)
