@@ -146,6 +146,17 @@ get_cfb_undefeated <- function(season, week){
                   color = .data$best_color,
                   image = .data$best_logo)
 
+  if (any(is.na(teams$color))) {
+    # Fill in missing values with white
+    teams$color[is.na(teams$color)] <- "#FFFFFF"
+  }
+
+  # checking for missing logos
+  if (any(is.na(teams$image))) {
+    # Fill in missing values with NCAA football logo
+    teams$image[is.na(teams$image)] <- "./inst/figures/no_logo.png"
+  }
+
   return(teams)
 
 }

@@ -33,7 +33,10 @@ Imports:
   tibble,
   tidyr,
   rlang,
-  grDevices
+  grDevices,
+  tidycensus,
+  gganimate,
+  gifski
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/Landon-Getting/territorymap
