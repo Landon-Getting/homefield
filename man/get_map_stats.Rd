@@ -31,8 +31,11 @@ Columns must also be of equal length and match the specified names exactly.}
 \cr If TRUE (default), only considers the continental United States.\cr
 \cr If FALSE, also considers Alaska and Hawaii.}
 
-\item{temporal}{(Optional - Vector of numeric values required): This will alter the returned data frame to include an extra column named 'time' with the supplied temporal information in a tidy format.\cr
-\cr The vector should contain temporal values representing the respective time of each data frame. If argument declared with a vector, x must be a list of data frames.
+\item{temporal}{(Optional - Vector of date-time values required):
+This will alter the returned data frame to include an extra column named 'time'
+with the supplied temporal information in a tidy format.\cr
+\cr The vector should contain temporal values representing the respective time
+of each data frame. If argument declared with a vector, x must be a list of data frames.
 The length of the vector supplied must equal the number of data frames in x.}
 
 \item{keep_max}{(Optional - Boolean required:) In some cases, a identifier may no longer be present in future temporal instances.\cr
@@ -63,24 +66,27 @@ Follow the directions \href{https://walker-data.com/tidycensus/reference/census_
 to receive a key.
 }
 \examples{
+
 \dontrun{
+
 # standard example
 cfb_map_stats <- get_map_stats(get_cfb_undefeated(season = 2021, week = 6))
 
 # temporal example
- x_input <- list(get_cfb_undefeated(season = 2021, week = 0),
-                 get_cfb_undefeated(season = 2021, week = 1),
-                 get_cfb_undefeated(season = 2021, week = 2),
-                 get_cfb_undefeated(season = 2021, week = 3),
-                 get_cfb_undefeated(season = 2021, week = 4))
+x_input <- list(get_cfb_undefeated(season = 2021, week = 0),
+                get_cfb_undefeated(season = 2021, week = 1),
+                get_cfb_undefeated(season = 2021, week = 2),
+                get_cfb_undefeated(season = 2021, week = 3),
+                get_cfb_undefeated(season = 2021, week = 4))
 
- # week 0 through 4
-temporal_input <- c(0,
-                     1,
-                     2,
-                     3,
-                     4)
+# week 0 through 4
+temporal_input <- lubridate::ymd(c("2021-08-28",
+                                   "2021-09-04",
+                                   "2021-09-11",
+                                   "2021-09-18"))
 
- map_stats <- territorymap::get_map_stats(x = x_input, temporal = temporal_input)
+map_stats <- territorymap::get_map_stats(x = x_input,
+                                         temporal = temporal_input)
+
 }
 }

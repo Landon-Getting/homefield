@@ -17,7 +17,6 @@ Description: Creates territory maps to visualize representation by region.
 License: MIT + file LICENSE
 Imports: 
   leaflet,
-  magrittr, 
   tigris, 
   dplyr,
   htmlwidgets, 
@@ -33,10 +32,11 @@ Imports:
   tibble,
   tidyr,
   rlang,
-  grDevices,
   tidycensus,
   gganimate,
-  gifski
+  ggpattern,
+  lubridate,
+  scales
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/Landon-Getting/territorymap

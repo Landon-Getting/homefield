@@ -25,3 +25,9 @@ costco <- data.frame(lapply(costco, function(x) gsub("Â", "", x)))
 costco |> View()
 
 
+
+
+
+
+
+

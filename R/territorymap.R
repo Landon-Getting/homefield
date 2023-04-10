@@ -32,7 +32,6 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
   # TO DO
   # improve logo size generation
   # what if no undefeated
-  # create get_cfb_imperialism()
 
   # Performing input checks ---------------------------------------------------
 
@@ -89,8 +88,15 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
     ifelse(is.null(check),TRUE,FALSE)
   }
 
+  # if starts with http, check if valid URL
+  if(all(sapply(x$image, function(x) substr(x, 1, 4) == "http"))) {
+    if(!(all(sapply(x$image, valid_url)))) {
+      stop("x must contain an image column with valid urls or accessible local file paths.")
+    }
+  }
+
   # checking image column for valid url or file paths
-  if(!(all(sapply(x$image,valid_url)) | (all(dir.exists(x$image)) & all(file.access(x$image, mode = 4))))) {
+  if((all(dir.exists(x$image)) & all(file.access(x$image, mode = 4)))) {
     stop("x must contain an image column with valid urls or accessible local file paths.")
   }
 
@@ -250,7 +256,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
   cli::cli_alert_info("Creating logos for map...")
 
   # magic to adjust the icon size based on territory area
-  icon_size <- (as.numeric((image_areas$area/1e11)) + 1) * 45
+  icon_size <- (as.numeric((image_areas$area/1e11)) + 1) * 43
 
   icon_size <- ifelse(icon_size > 400, 400, icon_size)
 

@@ -12,6 +12,9 @@
 #' get_cfb_undefeated(season = 2016, week = 8)
 get_cfb_undefeated <- function(season, week){
 
+  alt_color_list <- get0("alt_color_list", envir = asNamespace("territorymap"))
+  alt_logo_list <- get0("alt_logo_list", envir = asNamespace("territorymap"))
+
   # converting to numeric if inputted as string
   season <- as.numeric(season)
   week <- as.numeric(week)

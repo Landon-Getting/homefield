@@ -33,8 +33,11 @@
 #' \cr If TRUE (default), only considers the continental United States.\cr
 #' \cr If FALSE, also considers Alaska and Hawaii.
 #'
-#' @param temporal (Optional - Vector of numeric values required): This will alter the returned data frame to include an extra column named 'time' with the supplied temporal information in a tidy format.\cr
-#' \cr The vector should contain temporal values representing the respective time of each data frame. If argument declared with a vector, x must be a list of data frames.
+#' @param temporal (Optional - Vector of date-time values required):
+#' This will alter the returned data frame to include an extra column named 'time'
+#' with the supplied temporal information in a tidy format.\cr
+#' \cr The vector should contain temporal values representing the respective time
+#' of each data frame. If argument declared with a vector, x must be a list of data frames.
 #' The length of the vector supplied must equal the number of data frames in x.
 #'
 #' @param keep_max (Optional - Boolean required:) In some cases, a identifier may no longer be present in future temporal instances.\cr
@@ -52,32 +55,34 @@
 #' @export
 #'
 #' @examples
+#'
 #' \dontrun{
+#'
 #' # standard example
 #' cfb_map_stats <- get_map_stats(get_cfb_undefeated(season = 2021, week = 6))
 #'
 #' # temporal example
-#'  x_input <- list(get_cfb_undefeated(season = 2021, week = 0),
-#'                  get_cfb_undefeated(season = 2021, week = 1),
-#'                  get_cfb_undefeated(season = 2021, week = 2),
-#'                  get_cfb_undefeated(season = 2021, week = 3),
-#'                  get_cfb_undefeated(season = 2021, week = 4))
+#' x_input <- list(get_cfb_undefeated(season = 2021, week = 0),
+#'                 get_cfb_undefeated(season = 2021, week = 1),
+#'                 get_cfb_undefeated(season = 2021, week = 2),
+#'                 get_cfb_undefeated(season = 2021, week = 3),
+#'                 get_cfb_undefeated(season = 2021, week = 4))
 #'
-#'  # week 0 through 4
-#' temporal_input <- c(0,
-#'                      1,
-#'                      2,
-#'                      3,
-#'                      4)
+#' # week 0 through 4
+#' temporal_input <- lubridate::ymd(c("2021-08-28",
+#'                                    "2021-09-04",
+#'                                    "2021-09-11",
+#'                                    "2021-09-18"))
 #'
-#'  map_stats <- territorymap::get_map_stats(x = x_input, temporal = temporal_input)
+#' map_stats <- territorymap::get_map_stats(x = x_input,
+#'                                          temporal = temporal_input)
+#'
 #'}
-get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FALSE, keep_visuals = FALSE){
-
-  # if temporal present and not a numeric vector, return error
-  if(!missing(temporal) & !is.vector(temporal) & !is.numeric(temporal)){
-    stop("temporal must be a numeric vector.")
-  }
+get_map_stats <- function(x,
+                          continental = TRUE,
+                          temporal = NULL,
+                          keep_max = FALSE,
+                          keep_visuals = FALSE){
 
   if(!missing(keep_max) & !is.logical(keep_max)){
     stop("temporal must be a boolean value.")
@@ -242,17 +247,17 @@ get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FAL
 
     territory_map_df <- territory_map_df |>
       dplyr::group_by(.data$identifier) |>
-      dplyr::summarise(land = sum(ALAND, na.rm = TRUE),
-                       water = sum(AWATER, na.rm = TRUE),
-                       domain = sum(ALAND, na.rm = TRUE) + sum(AWATER, na.rm = TRUE),
-                       pop = sum(population, na.rm = TRUE))
+      dplyr::summarise(land = sum(.data$ALAND, na.rm = TRUE),
+                       water = sum(.data$AWATER, na.rm = TRUE),
+                       domain = sum(.data$ALAND, na.rm = TRUE) + sum(.data$AWATER, na.rm = TRUE),
+                       pop = sum(.data$population, na.rm = TRUE))
 
     # keep_visuals = TRUE and checks pass, add color and image back in
     if(visual_check == TRUE){
       territory_map_df <- dplyr::left_join(territory_map_df,
-                                           input_df |> dplyr::select(identifier,
-                                                              color,
-                                                              image),
+                                           input_df |> dplyr::select(.data$identifier,
+                                                                     .data$color,
+                                                                     .data$image),
                                            by = "identifier")
     }
 
@@ -269,9 +274,9 @@ get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FAL
       stop("The length of temporal must match the number of data frames in x.")
     }
 
-    # check if temporal is a vector
-    if(!is.vector(temporal)){
-      stop("temporal must be a vector.")
+    # if temporal present and not a date-time vector, return error
+    if(!all(sapply(temporal, lubridate::is.timepoint))){
+      stop("temporal must consist of date-time values.")
     }
 
     # check that temporal has unique values
@@ -305,11 +310,11 @@ get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FAL
     for(i in 1:length(temporal)){
 
       if(i == 1){
-        starting_identifiers <- dplyr::filter(map_stats, time == temporal[[i]])[[1]]
+        starting_identifiers <- dplyr::filter(map_stats, .data$time == temporal[[i]])[[1]]
 
       } else{
 
-        current_identifiers <- dplyr::filter(map_stats, time == temporal[[i]])[[1]]
+        current_identifiers <- dplyr::filter(map_stats, .data$time == temporal[[i]])[[1]]
 
         # Find the missing elements in the current identifiers
         missing_identifiers <- setdiff(starting_identifiers, current_identifiers)
@@ -318,8 +323,8 @@ get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FAL
 
           # get missing rows
           missing_rows <- map_stats |>
-            dplyr::filter(time == temporal[[i - 1]],
-                          identifier %in% missing_identifiers) |>
+            dplyr::filter(.data$time == temporal[[i - 1]],
+                          .data$identifier %in% missing_identifiers) |>
             dplyr::mutate(time = temporal[[i]])
 
           # Find the most recent row of each identifier and rbind with current time
@@ -330,8 +335,8 @@ get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FAL
 
           # get missing rows
           missing_rows <- map_stats |>
-            dplyr::filter(time == temporal[[i - 1]],
-                          identifier %in% missing_identifiers) |>
+            dplyr::filter(.data$time == temporal[[i - 1]],
+                          .data$identifier %in% missing_identifiers) |>
             dplyr::mutate(land = 0,
                           water = 0,
                           domain = 0,
@@ -345,7 +350,7 @@ get_map_stats <- function(x, continental = TRUE, temporal = NULL, keep_max = FAL
       }
     }
 
-    map_stats <- map_stats |> dplyr::arrange(time, identifier)
+    map_stats <- map_stats |> dplyr::arrange(.data$time, .data$identifier)
 
     # removes duplicate rows for when identifier has multiple instances
     map_stats <- map_stats[!duplicated(map_stats[c("identifier","time")]),]
