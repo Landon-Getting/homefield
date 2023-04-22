@@ -1,6 +1,6 @@
-Package: territorymap
+Package: homefield
 Type: Package
-Title: territorymap
+Title: homefield
 Version: 0.1.0
 Authors@R: 
   c(person(given = "Landon",
@@ -12,7 +12,7 @@ Authors@R:
            role = "aut",
            email = "bhagat@iastate.edu"))
 Maintainer: Landon Getting <landongetting@gmail.com>
-Description: Creates territory maps to visualize representation by region.
+Description: Creates homefield maps to visualize representation by region.
     Use four spaces when indenting paragraphs within the Description.
 License: MIT + file LICENSE
 Imports: 

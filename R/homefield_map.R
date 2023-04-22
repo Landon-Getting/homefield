@@ -1,21 +1,26 @@
-#' territorymap
+#' homefield_map
 #'
-#' @description Generates a territory map and saves as a .png file at a specified location.
+#' @description Generates a homefield map and saves as a .png file at a
+#' specified location.
 #'
-#' @param x Data frame created by other territorymap functions or including the following columns:\cr
+#' @param x Data frame created by other homefield functions or including the
+#' following columns:\cr
 #' \cr
-#' \strong{identifier} - identifies each element (ex. school name - Iowa State, Minnesota, Bowling Green).\cr
+#' \strong{entity} - identifies each entity (ex. school name - Iowa State,
+#' Minnesota, Bowling Green).\cr
 #' \cr
-#' \strong{lat} - latitude of element.\cr
+#' \strong{lat} - latitude of entity\cr
 #' \cr
-#' \strong{lng} - longitude of element.\cr
+#' \strong{lng} - longitude of entity\cr
 #' \cr
-#' \strong{color} - hexadecimal color to fill element territories (ex. #cfab7a).\cr
+#' \strong{color} - hexadecimal color to fill entity territories (ex. #cfab7a).\cr
 #' \cr
-#' \strong{image} - image url or local file path to be placed on at least one territory and all territories over the threshold.\cr
+#' \strong{image} - image url or local file path to be placed on at least one
+#' territory and all territories larger than the threshold.\cr
 #' \cr
 #' Columns must also be of equal length and match the specified names exactly.
-#' @param threshold (Numeric required): If territory above threshold (area in km^2), a secondary logo will be generated for that territory. \emph{Defaults to 10,000 km^2.}
+#' @param threshold (Numeric required): If territory above threshold (area in km^2),
+#' a secondary logo will be generated for that territory. \emph{Defaults to 10,000 km^2.}
 #' @param output_file (String required): Local file path ending in \emph{.png}.
 #' @param title (String required): Title of the map.
 #' @param credit (String required): Name of the map author.
@@ -25,9 +30,9 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{cfb_data <- get_cfb_undefeated(season = 2016, week = 6)}
-#' \dontrun{territorymap(x = cfb_data, output_file = paste0(getwd(),"/territorymap_example.png"))}
-territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit = NULL){
+#' \dontrun{cfb_data <- cfb_undefeated(season = 2016, week = 6)}
+#' \dontrun{homefield_map(x = cfb_data, output_file = paste0(getwd(),"/homefield_map_example.png"))}
+homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credit = NULL){
 
   # TO DO
   # improve logo size generation
@@ -36,7 +41,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
   # Performing input checks ---------------------------------------------------
 
   # setting expected column names
-  expected_cols <- c("identifier",
+  expected_cols <- c("entity",
                      "lat",
                      "lng",
                      "color",
@@ -44,7 +49,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
 
   # checking if column names match expected names
   if (!all(expected_cols %in% names(x))) {
-    stop("x must contain columns identifier, lat, lng, color, and image.")
+    stop("x must contain columns entity, lat, lng, color, and image.")
   }
 
   # getting column sizes
@@ -129,7 +134,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
     }
   }
 
-  cli::cli_h1("Generating Territory Map...")
+  cli::cli_h1("Generating homefield map...")
 
   # convert threshold from km^2 to m^2
   threshold <- threshold*1e6
@@ -137,7 +142,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
   input_df <- x
 
   input_df_location <- input_df |>
-    dplyr::select(.data$identifier,
+    dplyr::select(.data$entity,
                   .data$lat,
                   .data$lng)
 
@@ -147,7 +152,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
                                   crs = 4326) |>
     dplyr::rename(location = .data$geometry)
 
-  cli::cli_alert_info("Querying Map Data...")
+  cli::cli_alert_info("Querying map data...")
 
   states <- tigris::states(cb = TRUE, progress_bar = FALSE) |>
     dplyr::filter(!.data$STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |>
@@ -162,7 +167,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
 
   counties$centroid <- sf::st_centroid(counties$geometry)
 
-  # Calculating Distance between every county and identifier -----------------------
+  # Calculating Distance between every county and entity -----------------------
   cli::cli_alert_info("Calculating distances...")
 
   comparing_distances <- tidyr::expand_grid(input_df_location,
@@ -179,17 +184,17 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
 
   comparing_distances <- comparing_distances |>
     dplyr::select(.data$GEOID,
-                  .data$identifier,
+                  .data$entity,
                   .data$distances) |>
     dplyr::group_by(.data$GEOID) |>
     dplyr::slice(which.min(.data$distances))
 
   # Create data frame for color mapping -----------------------------------------
-  cli::cli_alert_info("Creating data frame for color mapping...")
+  cli::cli_alert_info("Adding color to the mapping...")
 
-  territory_map_df <- comparing_distances |>
+  homefield_map_df <- comparing_distances |>
     dplyr::select(.data$GEOID,
-                  .data$identifier) |>
+                  .data$entity) |>
     dplyr::left_join(counties |>
                        tigris::shift_geometry() |> # shift Alaska and Hawaii below
                        sf::st_transform("+proj=longlat +datum=WGS84") |>
@@ -198,31 +203,31 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
                                      by = "GEOID",
                                      keep = FALSE) |>
     dplyr::left_join(input_df |>
-                       dplyr::select(.data$identifier,
+                       dplyr::select(.data$entity,
                                      .data$color,
                                      .data$image)|>
                        dplyr::distinct(),
-                     by = "identifier",
+                     by = "entity",
                      keep = FALSE)
 
-  territory_map_df <- sf::st_as_sf(territory_map_df)
+  homefield_map_df <- sf::st_as_sf(homefield_map_df)
 
   # getting image locations --------------------------------------------------
   cli::cli_alert_info("Getting image locations...")
 
   # Apply the function to the example data frame
-  counties_grouped <- territory_map_df |>
-    dplyr::group_by(.data$identifier) |>
+  counties_grouped <- homefield_map_df |>
+    dplyr::group_by(.data$entity) |>
     dplyr::summarise(geometry = suppressWarnings(sf::st_union(.data$geometry,
                                                               is_coverage = TRUE)))  # reduces calculation time
 
   counties_grouped <- sf::st_cast(counties_grouped |>
-                                    dplyr::select(.data$identifier,
+                                    dplyr::select(.data$entity,
                                                   .data$geometry),
                                   "MULTIPOLYGON")
 
   counties_grouped <- sf::st_cast(counties_grouped |>
-                                    dplyr::select(.data$identifier,
+                                    dplyr::select(.data$entity,
                                                   .data$geometry),
                                   "POLYGON") |>
                                   suppressWarnings()
@@ -236,24 +241,24 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
                   id = dplyr::row_number())
 
   largest_areas <- counties_grouped |>
-    dplyr::group_by(.data$identifier) |>
+    dplyr::group_by(.data$entity) |>
     dplyr::filter(.data$area == max(.data$area))
 
   above_threshold_areas <- counties_grouped |>
-    dplyr::group_by(.data$identifier) |>
+    dplyr::group_by(.data$entity) |>
     dplyr::filter(.data$area > threshold)
 
   image_areas <- dplyr::bind_rows(largest_areas, above_threshold_areas) |>
     dplyr::distinct(.data$id, .keep_all = TRUE) |>
-    dplyr::arrange(.data$identifier) |>
+    dplyr::arrange(.data$entity) |>
     dplyr::mutate(centroid = sf::st_centroid(.data$geometry)) |>
-    dplyr::left_join(input_df |> dplyr::select(.data$identifier,
+    dplyr::left_join(input_df |> dplyr::select(.data$entity,
                                                .data$image),
-                     by = "identifier") |>
-    dplyr::arrange(.data$identifier)
+                     by = "entity") |>
+    dplyr::arrange(.data$entity)
 
   # Create logos for map --------------------------------------------------------
-  cli::cli_alert_info("Creating logos for map...")
+  cli::cli_alert_info("Adding images to map...")
 
   # magic to adjust the icon size based on territory area
   icon_size <- (as.numeric((image_areas$area/1e11)) + 1) * 43
@@ -290,7 +295,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
     return(hex_output)
   }
 
-  territory_map_df <- territory_map_df |>
+  homefield_map_df <- homefield_map_df |>
     dplyr::mutate(border_color = contrast_color(.data$color))
 
   # Reprojection
@@ -313,18 +318,18 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
     leaflet::setView(lng = -98.64580,
                      lat = 38.05909,
                      zoom = 5) |>
-    leaflet::addPolygons(data = territory_map_df,
+    leaflet::addPolygons(data = homefield_map_df,
                          color = "#434445",
                          weight = 0,
                          fillColor = ~color,
                          fillOpacity = 0.9,
                          smoothFactor = 0.2,
                          stroke = F,
-                         label = ~identifier) |>
+                         label = ~entity) |>
     leaflet::addMarkers(data = image_areas,
-                        label = ~identifier,
+                        label = ~entity,
                         icon = logoIcons) |>
-    leaflet::addPolylines(data = territory_map_df,
+    leaflet::addPolylines(data = homefield_map_df,
                           color = ~border_color,
                           weight = 0.25,
                           smoothFactor = 0,
@@ -339,9 +344,9 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
   # Saving the PNG -------------------------------------------------------------
   cli::cli_alert_info("Saving as .png...")
 
-  htmlwidgets::saveWidget(m, paste0(dirname(output_file), "/territorymap_temp.html"), selfcontained = F)
+  htmlwidgets::saveWidget(m, paste0(dirname(output_file), "/homefield_temp.html"), selfcontained = F)
 
-  webshot2::webshot(url = paste0(dirname(output_file), "/territorymap_temp.html"),
+  webshot2::webshot(url = paste0(dirname(output_file), "/homefield_temp.html"),
                     file = output_file,
                     vwidth = 3200,
                     vheight = 2000)
@@ -358,7 +363,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
   } else{
     credit_text <- paste0("Created by ",
                           credit,
-                          " with the territorymap R package.")
+                          " with the homefield R package.")
   }
 
   if(is.null(title)){
@@ -407,7 +412,7 @@ territorymap <- function(x, threshold = 10000, output_file, title = NULL, credit
     magick::image_flip() |>
     magick::image_write(output_file, format = "png")
 
-  file.remove(paste0(dirname(output_file), "/territorymap_temp.html"))
+  file.remove(paste0(dirname(output_file), "/homefield_temp.html"))
 
   cli::cli_alert_info("Finished! :)")
 

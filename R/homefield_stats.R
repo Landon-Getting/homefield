@@ -1,31 +1,40 @@
-#' get_map_stats
-#' @description Returns a data frame with summary statistics for each identifier based on their map territory. \cr
+#' homefield_stats
+#' @description Returns a data frame with summary statistics for each entity based on the homefield map. \cr
 #' \cr \strong{This function requires a CENSUS API Key.}
 #' Follow the directions \href{https://walker-data.com/tidycensus/reference/census_api_key.html}{here}
 #' to receive a key.
 #'
 #' @returns Output data frame includes four summary statistics:\cr
 #' \cr
-#' \strong{land} - Total land area area (in square meters) within territory controlled by identifier.\cr
+#' \strong{land} - Total land area area (in square meters) within territory
+#' controlled by entity.\cr
 #' \cr
-#' \strong{water} - Total land area area (in square meters) within territory controlled by identifier.\cr
+#' \strong{water} - Total land area area (in square meters) within territory
+#' controlled by entity.\cr
 #' \cr
-#' \strong{domain} - Sum of land and water area (in square meters) within territory controlled by identifier.\cr
+#' \strong{domain} - Sum of land and water area (in square meters) within
+#' territory controlled by entity.\cr
 #' \cr
-#' \strong{pop} - Population that resides within territory controlled by identifier.\cr
+#' \strong{pop} - Population that resides within territory controlled by entity.\cr
 #'
 #'
-#' @param x (Required): Data frame created by other territorymap functions or including the following columns:\cr
+#' @param x (Required): Data frame created by other homefield functions or
+#' including the following columns:\cr
 #' \cr
-#' \strong{identifier} - identifies each element (ex. school name - Iowa State, Minnesota, Bowling Green).\cr
+#' \strong{entity} - identifies each entity (ex. school name - Iowa State,
+#' Minnesota, Bowling Green).\cr
 #' \cr
-#' \strong{lat} - latitude of element.\cr
+#' \strong{lat} - latitude of entity.\cr
 #' \cr
-#' \strong{lng} - longitude of element.\cr
+#' \strong{lng} - longitude of entity.\cr
 #' \cr
-#' \strong{color} - \emph{(Optional:)} hexadecimal color (ex. #cfab7a) useful for plotting with territorymap(). Set keep_visuals = TRUE to include this column in the returned data frame.\cr
+#' \strong{color} - \emph{(Optional:)} hexadecimal color (ex. #cfab7a) useful
+#' for plotting with homefield_map(). Set keep_visuals = TRUE to include this
+#' column in the returned data frame.\cr
 #' \cr
-#' \strong{image} - \emph{(Optional:)}image url or local file path useful for plotting with territorymap(). Set keep_visuals = TRUE to include this column in the returned data frame.\cr
+#' \strong{image} - \emph{(Optional:)}image url or local file path useful for
+#' plotting with homefield_map(). Set keep_visuals = TRUE to include this
+#' column in the returned data frame.\cr
 #' \cr
 #' Columns must also be of equal length and match the specified names exactly.
 #'
@@ -40,13 +49,18 @@
 #' of each data frame. If argument declared with a vector, x must be a list of data frames.
 #' The length of the vector supplied must equal the number of data frames in x.
 #'
-#' @param keep_max (Optional - Boolean required:) In some cases, a identifier may no longer be present in future temporal instances.\cr
-#' \cr If keep_max = TRUE, identifiers will be generated for future instances and their statistics will match the instance where they were most recently present.\cr
-#' \cr If keep_max = FALSE (default), identifiers will be generated in future instances but their statistics will be set to 0.
-#'\cr If keep_max = NULL, identifiers will NOT be generated in future instances where they do not appear already.
+#' @param keep_max (Optional - Boolean required:) In some cases, a entity may
+#' no longer be present in future temporal instances.\cr
+#' \cr If keep_max = TRUE, entities will be generated for future instances and
+#' their statistics will match the instance where they were most recently present.\cr
+#' \cr If keep_max = FALSE (default), entities will be generated in future
+#' instances but their statistics will be set to 0.
+#'\cr If keep_max = NULL, entities will NOT be generated in future instances
+#'where they do not appear already.
 #'
-#' @param keep_visuals (Optional - Boolean required:) If x has color and image columns present,
-#' keep_visuals can be used to discard or keep these columns in the returned data frame.\cr
+#' @param keep_visuals (Optional - Boolean required:) If x has color and image
+#' columns present, keep_visuals can be used to discard or keep these columns
+#' in the returned data frame.\cr
 #' \cr If keep_visuals = TRUE, the columns will be kept.\cr
 #' \cr If keep_visuals = FALSE (default), the columns will be removed.
 #'
@@ -59,14 +73,14 @@
 #' \dontrun{
 #'
 #' # standard example
-#' cfb_map_stats <- get_map_stats(get_cfb_undefeated(season = 2021, week = 6))
+#' cfb_map_stats <- homefield_stats(cfb_undefeated(season = 2021, week = 6))
 #'
 #' # temporal example
-#' x_input <- list(get_cfb_undefeated(season = 2021, week = 0),
-#'                 get_cfb_undefeated(season = 2021, week = 1),
-#'                 get_cfb_undefeated(season = 2021, week = 2),
-#'                 get_cfb_undefeated(season = 2021, week = 3),
-#'                 get_cfb_undefeated(season = 2021, week = 4))
+#' x_input <- list(cfb_undefeated(season = 2021, week = 0),
+#'                 cfb_undefeated(season = 2021, week = 1),
+#'                 cfb_undefeated(season = 2021, week = 2),
+#'                 cfb_undefeated(season = 2021, week = 3),
+#'                 cfb_undefeated(season = 2021, week = 4))
 #'
 #' # week 0 through 4
 #' temporal_input <- lubridate::ymd(c("2021-08-28",
@@ -74,11 +88,11 @@
 #'                                    "2021-09-11",
 #'                                    "2021-09-18"))
 #'
-#' map_stats <- territorymap::get_map_stats(x = x_input,
+#' map_stats <- homefield::homefield_stats(x = x_input,
 #'                                          temporal = temporal_input)
 #'
 #'}
-get_map_stats <- function(x,
+homefield_stats <- function(x,
                           continental = TRUE,
                           temporal = NULL,
                           keep_max = FALSE,
@@ -108,13 +122,13 @@ get_map_stats <- function(x,
     visual_check = FALSE
 
     # setting expected column names
-    expected_cols <- c("identifier",
+    expected_cols <- c("entity",
                        "lat",
                        "lng")
 
     # checking if column names match expected names
     if (!all(expected_cols %in% names(x))) {
-      stop("x must contain columns identifier, lat, and lng.")
+      stop("x must contain columns entity, lat, and lng.")
     }
 
     # getting column sizes
@@ -180,7 +194,7 @@ get_map_stats <- function(x,
   generate_stats <- function(input_df, visual_check){
 
     input_df_location <- input_df |>
-      dplyr::select(.data$identifier,
+      dplyr::select(.data$entity,
                     .data$lat,
                     .data$lng)
 
@@ -197,7 +211,7 @@ get_map_stats <- function(x,
 
     counties$centroid <- sf::st_centroid(counties$geometry)
 
-    # Calculating Distance between every county and identifier -----------------------
+    # Calculating Distance between every county and entity -----------------------
     comparing_distances <- tidyr::expand_grid(input_df_location,
                                               counties |>
                                                 dplyr::select(.data$GEOID, .data$centroid) |>
@@ -212,7 +226,7 @@ get_map_stats <- function(x,
 
     comparing_distances <- comparing_distances |>
       dplyr::select(.data$GEOID,
-                    .data$identifier,
+                    .data$entity,
                     .data$distances) |>
       dplyr::group_by(.data$GEOID) |>
       dplyr::slice(which.min(.data$distances))
@@ -220,7 +234,7 @@ get_map_stats <- function(x,
     # Create data frame to match each county to a school  ------------------------
     territory_map_df <- comparing_distances |>
       dplyr::select(.data$GEOID,
-                    .data$identifier) |>
+                    .data$entity) |>
       dplyr::left_join(counties |>
                          dplyr::select(.data$GEOID,
                                        .data$ALAND,
@@ -246,7 +260,7 @@ get_map_stats <- function(x,
     # Calculating map stats  ---------------------------------------------------
 
     territory_map_df <- territory_map_df |>
-      dplyr::group_by(.data$identifier) |>
+      dplyr::group_by(.data$entity) |>
       dplyr::summarise(land = sum(.data$ALAND, na.rm = TRUE),
                        water = sum(.data$AWATER, na.rm = TRUE),
                        domain = sum(.data$ALAND, na.rm = TRUE) + sum(.data$AWATER, na.rm = TRUE),
@@ -255,10 +269,10 @@ get_map_stats <- function(x,
     # keep_visuals = TRUE and checks pass, add color and image back in
     if(visual_check == TRUE){
       territory_map_df <- dplyr::left_join(territory_map_df,
-                                           input_df |> dplyr::select(.data$identifier,
+                                           input_df |> dplyr::select(.data$entity,
                                                                      .data$color,
                                                                      .data$image),
-                                           by = "identifier")
+                                           by = "entity")
     }
 
 
@@ -310,24 +324,24 @@ get_map_stats <- function(x,
     for(i in 1:length(temporal)){
 
       if(i == 1){
-        starting_identifiers <- dplyr::filter(map_stats, .data$time == temporal[[i]])[[1]]
+        starting_entities <- dplyr::filter(map_stats, .data$time == temporal[[i]])[[1]]
 
       } else{
 
-        current_identifiers <- dplyr::filter(map_stats, .data$time == temporal[[i]])[[1]]
+        current_entities <- dplyr::filter(map_stats, .data$time == temporal[[i]])[[1]]
 
-        # Find the missing elements in the current identifiers
-        missing_identifiers <- setdiff(starting_identifiers, current_identifiers)
+        # Find the missing elements in the current entities
+        missing_entities <- setdiff(starting_entities, current_entities)
 
         if(keep_max == TRUE){
 
           # get missing rows
           missing_rows <- map_stats |>
             dplyr::filter(.data$time == temporal[[i - 1]],
-                          .data$identifier %in% missing_identifiers) |>
+                          .data$entity %in% missing_entities) |>
             dplyr::mutate(time = temporal[[i]])
 
-          # Find the most recent row of each identifier and rbind with current time
+          # Find the most recent row of each entity and rbind with current time
           map_stats <- rbind(map_stats,
                                   missing_rows)
 
@@ -336,24 +350,24 @@ get_map_stats <- function(x,
           # get missing rows
           missing_rows <- map_stats |>
             dplyr::filter(.data$time == temporal[[i - 1]],
-                          .data$identifier %in% missing_identifiers) |>
+                          .data$entity %in% missing_entities) |>
             dplyr::mutate(land = 0,
                           water = 0,
                           domain = 0,
                           pop = 0,
                           time = temporal[[i]])
 
-          # Find the most recent row of each identifier and rbind with current time
+          # Find the most recent row of each entity and rbind with current time
           map_stats <- rbind(map_stats,
                                   missing_rows)
         }
       }
     }
 
-    map_stats <- map_stats |> dplyr::arrange(.data$time, .data$identifier)
+    map_stats <- map_stats |> dplyr::arrange(.data$time, .data$entity)
 
-    # removes duplicate rows for when identifier has multiple instances
-    map_stats <- map_stats[!duplicated(map_stats[c("identifier","time")]),]
+    # removes duplicate rows for when entity has multiple instances
+    map_stats <- map_stats[!duplicated(map_stats[c("entity","time")]),]
 
   } else { # temporal argument NOT provided
     visual_check <- input_checks(x)

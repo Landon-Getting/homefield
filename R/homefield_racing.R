@@ -1,25 +1,37 @@
-#' territoryracing
+#' hf_racing
 #' @description
-#' Creates a racing bar chart to show map summary statistics over time and saves as a .gif file at a specified location.
+#' Creates a racing bar chart to show map summary statistics over time and
+#' saves as a .gif file at a specified location.
 #'
-#' @param x Data frame created by get_map_stats() or including the following columns:\cr
+#' @param x Data frame created by homefield_stats() or including the following columns:\cr
 #' \cr
-#' \strong{identifier} - identifies each element (ex. school name - Iowa State, Minnesota, Bowling Green).\cr
+#' \strong{entity} - identifies each entity (ex. school name - Iowa State,
+#' Minnesota, Bowling Green).\cr
 #' \cr
-#' \strong{color} - hexadecimal color to fill element bars (ex. #cfab7a).\cr
+#' \strong{color} - hexadecimal color to fill entity bars (ex. #cfab7a).\cr
 #' \cr
-#' \strong{image} - image url or local file path to be placed on element bars.\cr
+#' \strong{image} - image url or local file path to be placed on entity bars.\cr
 #' \cr
-#' \strong{time} - date-times representing when each set of summary statistics was relevant.\cr
+#' \strong{time} - date-times representing when each set of summary statistics
+#' was relevant.\cr
 #' \cr
-#' \strong{\emph{stat_name}} - Summary statistic column with name specified by the stat_name argument. Examples from get_map_stats() include land, water, domain, and population. \cr
+#' \strong{\emph{stat_name}} - Summary statistic column with name specified by
+#' the stat_name argument. Examples from homefield_stats() include land, water,
+#' domain, and population. \cr
 #' \cr
 #'
-#' @param stat_name (String required): Name of the summary statistic column which determines bar size and ordering.
+#' @param stat_name (String required): Name of the summary statistic column
+#' which determines bar size and ordering.
+#'
 #' @param output_file (String required): Local file path ending in \emph{.gif}.
+#'
 #' @param title (String required): Title of the map.
-#' @param subtitle (String required): Subtitle of the map. Usually indicates label of the summary statistic.
-#' @param caption (String required): Caption of the map. Usually includes provides credit to data origins.
+#'
+#' @param subtitle (String required): Subtitle of the map. Usually indicates
+#' label of the summary statistic.
+#'
+#' @param caption (String required): Caption of the map. Usually includes
+#' provides credit to data origins.
 #'
 #' @importFrom rlang .data
 #'
@@ -27,25 +39,25 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Creating racing bar chart for cfb imperialism maps in 2021
+#' # Creating racing bar chart for cfb conquest maps in 2021
 #'
 #' # undefeated for each week, 0 through 15
-#' x_input <- list(get_cfb_imperialism(season = 2021, week = 0),
-#'                get_cfb_imperialism(season = 2021, week = 1),
-#'                get_cfb_imperialism(season = 2021, week = 2),
-#'                get_cfb_imperialism(season = 2021, week = 3),
-#'                get_cfb_imperialism(season = 2021, week = 4),
-#'                get_cfb_imperialism(season = 2021, week = 5),
-#'                get_cfb_imperialism(season = 2021, week = 6),
-#'                get_cfb_imperialism(season = 2021, week = 7),
-#'                get_cfb_imperialism(season = 2021, week = 8),
-#'                get_cfb_imperialism(season = 2021, week = 9),
-#'                get_cfb_imperialism(season = 2021, week = 10),
-#'                get_cfb_imperialism(season = 2021, week = 11),
-#'                get_cfb_imperialism(season = 2021, week = 12),
-#'                get_cfb_imperialism(season = 2021, week = 13),
-#'                get_cfb_imperialism(season = 2021, week = 14),
-#'                get_cfb_imperialism(season = 2021, week = 15))
+#' x_input <- list(cfb_conquest(season = 2021, week = 0),
+#'                cfb_conquest(season = 2021, week = 1),
+#'                cfb_conquest(season = 2021, week = 2),
+#'                cfb_conquest(season = 2021, week = 3),
+#'                cfb_conquest(season = 2021, week = 4),
+#'                cfb_conquest(season = 2021, week = 5),
+#'                cfb_conquest(season = 2021, week = 6),
+#'                cfb_conquest(season = 2021, week = 7),
+#'                cfb_conquest(season = 2021, week = 8),
+#'                cfb_conquest(season = 2021, week = 9),
+#'                cfb_conquest(season = 2021, week = 10),
+#'                cfb_conquest(season = 2021, week = 11),
+#'                cfb_conquest(season = 2021, week = 12),
+#'                cfb_conquest(season = 2021, week = 13),
+#'                cfb_conquest(season = 2021, week = 14),
+#'                cfb_conquest(season = 2021, week = 15))
 #'
 #'# time in weeks, 0 through 15
 #'temporal_input <- lubridate::ymd(c("2021-08-28",
@@ -66,7 +78,7 @@
 #'                                  "2021-12-11"))
 #'
 #'
-#'temporal_stats <- get_map_stats(x = x_input,
+#'temporal_stats <- homefield_stats(x = x_input,
 #'                                temporal = temporal_input,
 #'                                keep_max = FALSE,
 #'                                keep_visuals = TRUE)
@@ -75,27 +87,27 @@
 #'temporal_stats_plot <- temporal_stats |>
 #'  dplyr::mutate(land = land/2.59e6)
 #'
-#'territoryracing(x = temporal_stats_plot,
+#'hf_racing(x = temporal_stats_plot,
 #'                stat_name = "land",
-#'                title = "2021 Season Week by Week - Imperialism CFB Territory Map",
+#'                title = "2021 Season Week by Week - CFB Conquest homefield Map",
 #'                subtitle = "Area in Square Miles",
 #'                caption = "Data Source: cfbd.com",
-#'                output_file = "C:/Users/darthvader/Downloads/cfb_imperialism_2021_racing.gif")
+#'                output_file = "C:/Users/darthvader/Downloads/cfb_conquest_2021_racing.gif")
 #' }
-territoryracing <- function(x,
+hf_racing <- function(x,
                             stat_name,
                             output_file,
                             title = "Racing Bar Chart",
                             subtitle = "Value Label",
                             caption = "Data Source"){
 
-  cli::cli_h1("Generating Territory Racing Bar Graph...")
+  cli::cli_h1("Generating homefield racing bar graph...")
 
   cli::cli_alert_info("Checking inputs...")
 
   # INPUT CHECKS --------------------------------------------------------------
   # setting expected column names
-  expected_cols <- c("identifier",
+  expected_cols <- c("entity",
                      "color",
                      "image",
                      "time",
@@ -107,7 +119,7 @@ territoryracing <- function(x,
 
   # checking if column names match expected names
   if (!all(expected_cols %in% names(x))) {
-    stop("x must contain columns identifier, color, image, time, and the specified stat_name.")
+    stop("x must contain columns entity, color, image, time, and the specified stat_name.")
   }
 
   # getting column sizes
@@ -184,20 +196,20 @@ territoryracing <- function(x,
   x_ready <- x |>
     dplyr::group_by(.data$time) |>
     dplyr::mutate(rank = rank(-get(stat_name)),
-                  identifier_rel = get(stat_name)/get(stat_name)[rank==1],
-                  identifier_lbl = paste0(" ",round(get(stat_name)))) |>
-    dplyr::group_by(.data$identifier) |>
+                  entity_rel = get(stat_name)/get(stat_name)[rank==1],
+                  entity_lbl = paste0(" ",round(get(stat_name)))) |>
+    dplyr::group_by(.data$entity) |>
     dplyr::filter(rank <=10) |>
     dplyr::ungroup() |>
     dplyr::arrange(.data$time, rank)|>
-    dplyr::mutate(identifier_lbl = prettyNum(.data$identifier_lbl,
+    dplyr::mutate(entity_lbl = prettyNum(.data$entity_lbl,
                                              big.mark = ","))
 
   cli::cli_alert_info("Creating static plot...")
 
   # Creating Static Plot-------------------------------------------------------
   static_plot <- ggplot2::ggplot(x_ready,
-                                 ggplot2::aes(group = .data$identifier)) +
+                                 ggplot2::aes(group = .data$entity)) +
     ggpattern::geom_rect_pattern(
       ggplot2::aes(pattern_filename = I(.data$image),
                    fill = .data$color,
@@ -213,13 +225,13 @@ territoryracing <- function(x,
     ggplot2::scale_fill_identity() +
     ggplot2::geom_text(ggplot2::aes(x = rank,
                                     y = 0,
-                                    label = paste(.data$identifier, " ")),
+                                    label = paste(.data$entity, " ")),
                        vjust = 0.2,
                        hjust = 1,
                        size = 10.5) +
     ggplot2::geom_text(ggplot2::aes(x = rank,
                                     y= get(stat_name),
-                                    label = .data$identifier_lbl,
+                                    label = .data$entity_lbl,
                                     hjust=0),
                        size = 10) +
     ggplot2::geom_text(ggplot2::aes(x=10,

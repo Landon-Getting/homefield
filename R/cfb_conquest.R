@@ -1,17 +1,17 @@
-#' get_cfb_imperialism
-#' @description Provides a data frame with current college football imperialism data during a particular season and week. The data frame is ready for plotting with territorymaps().
+#' cfb_conquest
+#' @description Provides a data frame with current college football conquest data during a particular season and week. The data frame is ready for plotting with hf_map().
 #'
 #' @param season (Integer required): Year, 4 digit format (YYYY), ~1897 to present.
 #' @param week (Integer required): Week, values from 1-15, 1-14 for seasons pre-playoff (i.e. 2013 or eariler).
 #' @param division (String required): What is the lowest division that should start off owning land? Acceptable inputs include "fbs" or "fcs". \emph{Defaults to "fbs"}.
 #'
 #' @importFrom rlang .data
-#' @return Returns data frame prepared for territorymap().
+#' @return Returns data frame prepared for hf_map().
 #' @export
 #'
 #' @examples
-#' \dontrun{get_cfb_imperialism(season = 2016, week = 8)}
-get_cfb_imperialism <- function(season, week, division = "fbs"){
+#' \dontrun{cfb_conquest(season = 2016, week = 8)}
+cfb_conquest <- function(season, week, division = "fbs"){
 
   alt_color_list <- get0("alt_color_list", envir = asNamespace("territorymap"))
   alt_logo_list <- get0("alt_logo_list", envir = asNamespace("territorymap"))
@@ -77,7 +77,7 @@ get_cfb_imperialism <- function(season, week, division = "fbs"){
                     .data$longitude,
                     .data$best_color,
                     .data$best_logo) |>
-      dplyr::rename(identifier = .data$school,
+      dplyr::rename(entity = .data$school,
                     lat = .data$latitude,
                     lng = .data$longitude,
                     color = .data$best_color,
@@ -143,18 +143,18 @@ get_cfb_imperialism <- function(season, week, division = "fbs"){
     teams <- dplyr::left_join(teams,
                               all_teams,
                               by = "team_id") |>
-      dplyr::rename(identifier = .data$school,
+      dplyr::rename(entity = .data$school,
                     color = .data$best_color,
                     image = .data$best_logo,
                     lat = .data$latitude,
                     lng = .data$longitude) |>
       # selecting everything except for team_id
-      dplyr::select(.data$identifier,
+      dplyr::select(.data$entity,
                     .data$lat,
                     .data$lng,
                     .data$color,
                     .data$image) |>
-      dplyr::arrange(.data$identifier)
+      dplyr::arrange(.data$entity)
 
   }
 

@@ -1,16 +1,16 @@
-#' get_cfb_undefeated
-#' @description Provides a data frame with the undefeated D1 College Football teams during a particular season and week. The data frame is ready for plotting with territorymaps().
+#' cfb_undefeated
+#' @description Provides a data frame with the undefeated D1 College Football teams during a particular season and week. The data frame is ready for plotting with hf_map().
 #'
 #' @param season (Integer required): Year, 4 digit format (YYYY), ~1897 to present.
 #' @param week (Integer required): Week, values from 1-15, 1-14 for seasons pre-playoff (i.e. 2013 or eariler).
 #'
 #' @importFrom rlang .data
-#' @return Returns data frame prepared for territorymap().
+#' @return Returns data frame prepared for hf_map().
 #' @export
 #'
 #' @examples
-#' get_cfb_undefeated(season = 2016, week = 8)
-get_cfb_undefeated <- function(season, week){
+#' cfb_undefeated(season = 2016, week = 8)
+cfb_undefeated <- function(season, week){
 
   alt_color_list <- get0("alt_color_list", envir = asNamespace("territorymap"))
   alt_logo_list <- get0("alt_logo_list", envir = asNamespace("territorymap"))
@@ -91,7 +91,7 @@ get_cfb_undefeated <- function(season, week){
                   .data$longitude,
                   .data$best_color,
                   .data$best_logo) |>
-    dplyr::rename(identifier = .data$school,
+    dplyr::rename(entity = .data$school,
                   lat = .data$latitude,
                   lng = .data$longitude,
                   color = .data$best_color,
