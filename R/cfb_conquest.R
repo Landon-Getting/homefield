@@ -13,8 +13,8 @@
 #' \dontrun{cfb_conquest(season = 2016, week = 8)}
 cfb_conquest <- function(season, week, division = "fbs"){
 
-  alt_color_list <- get0("alt_color_list", envir = asNamespace("territorymap"))
-  alt_logo_list <- get0("alt_logo_list", envir = asNamespace("territorymap"))
+  alt_color_list <- get0("alt_color_list", envir = asNamespace("homefield"))
+  alt_logo_list <- get0("alt_logo_list", envir = asNamespace("homefield"))
 
   # converting to numeric if inputted as string
   season <- as.numeric(season)

@@ -1,10 +1,10 @@
-library(territorymap)
+library(homefield)
 
-cfb_undefeated_s2022_w6 <- get_cfb_undefeated(season = 2022, week = 6)
+cfb_undefeated_s1999_w4 <- homefield::cfb_undefeated(season = 1999, week = 4)
 
-territorymap(x = cfb_undefeated_s2022_w6,
+homefield_map(x = cfb_undefeated_s1999_w4,
              output_file = "C:/Users/lwget/Downloads/cfb_undefeated_s2022_w6.png",
-             title = "College Football Undefeated - Season 2022 Week 6",
+             title = "College Football Undefeated - Season 1999 Week 4",
              credit = "Landon Getting")
 
 
@@ -15,7 +15,7 @@ for(i in 0:15){
                credit = "Landon Getting")
 }
 
-cfb_undefeated_s2022_w6_stats <- get_map_stats(x = cfb_undefeated_s2022_w6)
+cfb_undefeated_s2022_w6_stats <- homefield_stats(x = cfb_undefeated_s2022_w6)
 
 View(cfb_undefeated_s2022_w6_stats)
 
@@ -26,22 +26,22 @@ max(cfb_undefeated_s2022_w6_stats$land)
 # let's look at land over time for the 2022 season
 
 # undefeated for each week, 0 through 15
-x_input <- list(get_cfb_undefeated(season = 2022, week = 0),
-                get_cfb_undefeated(season = 2022, week = 1),
-                get_cfb_undefeated(season = 2022, week = 2),
-                get_cfb_undefeated(season = 2022, week = 3),
-                get_cfb_undefeated(season = 2022, week = 4),
-                get_cfb_undefeated(season = 2022, week = 5),
-                get_cfb_undefeated(season = 2022, week = 6),
-                get_cfb_undefeated(season = 2022, week = 7),
-                get_cfb_undefeated(season = 2022, week = 8),
-                get_cfb_undefeated(season = 2022, week = 9),
-                get_cfb_undefeated(season = 2022, week = 10),
-                get_cfb_undefeated(season = 2022, week = 11),
-                get_cfb_undefeated(season = 2022, week = 12),
-                get_cfb_undefeated(season = 2022, week = 13),
-                get_cfb_undefeated(season = 2022, week = 14),
-                get_cfb_undefeated(season = 2022, week = 15))
+x_input <- list(cfb_undefeated(season = 2022, week = 0),
+                cfb_undefeated(season = 2022, week = 1),
+                cfb_undefeated(season = 2022, week = 2),
+                cfb_undefeated(season = 2022, week = 3),
+                cfb_undefeated(season = 2022, week = 4),
+                cfb_undefeated(season = 2022, week = 5),
+                cfb_undefeated(season = 2022, week = 6),
+                cfb_undefeated(season = 2022, week = 7),
+                cfb_undefeated(season = 2022, week = 8),
+                cfb_undefeated(season = 2022, week = 9),
+                cfb_undefeated(season = 2022, week = 10),
+                cfb_undefeated(season = 2022, week = 11),
+                cfb_undefeated(season = 2022, week = 12),
+                cfb_undefeated(season = 2022, week = 13),
+                cfb_undefeated(season = 2022, week = 14),
+                cfb_undefeated(season = 2022, week = 15))
 
 # time in weeks, 0 through 15
 temporal_input <- lubridate::ymd(c("2022-08-27",
@@ -61,7 +61,7 @@ temporal_input <- lubridate::ymd(c("2022-08-27",
                                    "2022-12-3",
                                    "2022-12-10"))
 
-temporal_stats <- get_map_stats(x = x_input,
+temporal_stats <- homefield_stats(x = x_input,
                                 temporal = temporal_input,
                                 keep_max = FALSE,
                                 keep_visuals = TRUE)
@@ -70,9 +70,9 @@ temporal_stats <- get_map_stats(x = x_input,
 temporal_stats_plot <- temporal_stats |>
   dplyr::mutate(land = land/2.59e6)
 
-territoryracing(x = temporal_stats_plot,
+homefield_racing(x = temporal_stats_plot,
                 stat_name = "land",
-                title = "2022 Season Week by Week - Undefeated CFB Territory Map",
+                title = "2022 Season Week by Week - Undefeated CFB homefield Map",
                 subtitle = "Area in Square Miles",
                 caption = "Data Source: cfbd.com",
                 output_file = "C:/Users/lwget/Downloads/cfb_undefeated_s2022_racing.gif")
