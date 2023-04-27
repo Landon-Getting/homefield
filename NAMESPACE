@@ -2,8 +2,8 @@
 
 export(cfb_conquest)
 export(cfb_undefeated)
-export(hf_racing)
 export(homefield_map)
+export(homefield_racing)
 export(homefield_shiny)
 export(homefield_stats)
 importFrom(rlang,.data)

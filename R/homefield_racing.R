@@ -1,4 +1,4 @@
-#' hf_racing
+#' homefield_racing
 #' @description
 #' Creates a racing bar chart to show map summary statistics over time and
 #' saves as a .gif file at a specified location.
@@ -94,7 +94,7 @@
 #'                caption = "Data Source: cfbd.com",
 #'                output_file = "C:/Users/darthvader/Downloads/cfb_conquest_2021_racing.gif")
 #' }
-hf_racing <- function(x,
+homefield_racing <- function(x,
                             stat_name,
                             output_file,
                             title = "Racing Bar Chart",
@@ -297,9 +297,9 @@ hf_racing <- function(x,
   cli::cli_alert_info("Rendering...")
   # Rendering ------------------------------------------------------------------
   gganimate::animate(animated,
-                     nframes = 300,
-                     fps = 10,
-                     end_pause = 30,
+                     nframes = 150,
+                     fps = 5,
+                     end_pause = 10,
                      width = 1500,
                      height = 1000,
                      renderer = gganimate::gifski_renderer(output_file))

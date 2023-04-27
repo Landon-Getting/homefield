@@ -9,7 +9,7 @@ homefield_map(x = cfb_undefeated_s1999_w4,
 
 
 for(i in 0:15){
-  territorymap(x = get_cfb_undefeated(season = 2022, week = i),
+  homefield_map(x = cfb_undefeated(season = 2022, week = i),
                output_file = paste0("C:/Users/lwget/Downloads/cfb_undefeated_s2022_w", i,".png"),
                title = paste0("College Football Undefeated - Season 2022 Week ", i),
                credit = "Landon Getting")
