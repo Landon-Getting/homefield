@@ -1,6 +1,6 @@
 library(homefield)
 
-cfb_undefeated_s1999_w4 <- homefield::cfb_undefeated(season = 1999, week = 4)
+cfb_undefeated_s1999_w4 <- homefield::cfb_undefeated(season = 1999, week = 0)
 
 homefield_map(x = cfb_undefeated_s1999_w4,
              output_file = "C:/Users/lwget/Downloads/cfb_undefeated_s2022_w6.png",

@@ -1,0 +1,176 @@
+# Sizing Leaflet Markers within sf Polygons
+
+Loading in packages, data, and inscription function.
+
+```{r}
+library(sf)
+library(ggplot2)
+
+# creates inscribed circle on any polygon
+inscribed_circle <- function(poly) {
+  # Get centroid of polygon
+  centroid <- sf::st_centroid(poly)
+
+  # Get nearest point
+  radius <- sf::st_length(sf::st_nearest_points(poly, centroid, pairwise = TRUE))
+
+  # Create circle as a point with a buffer around it
+  circle <- sf::st_buffer(centroid, radius)
+
+  return(circle)
+}
+
+# loading spatial data
+nc <- st_read(system.file("shape/nc.shp", package="sf")) |>
+  sf::st_transform("+proj=longlat +datum=WGS84")
+```
+
+Selecting the first polygon in the nc dataset.
+
+Determining the distance between the centroid of the polygon and the closest point on the polygon. Creating an inscribed circle with radius equal to this distance and plotting.
+
+Adding a marker that is scaled based on the radius of the inscribed circle. Marker size is in pixels and circle radius is in meters (lat/long calculation). Not sure how to do this conversion.
+
+```{r}
+polytest <- nc[1,15]
+
+# creating geometry of inscribed circle
+inscribed <- inscribed_circle(polytest)
+
+# calculating size of inscribed polygon
+polytest$centroid <- sf::st_centroid(polytest)
+territory_border <- sf::st_length(sf::st_nearest_points(polytest$geometry,
+                                                        polytest$centroid,
+                                                        pairwise = TRUE))
+
+# scaling the marker relative to the inscribed polygon size
+icons <- leaflet::icons(
+  iconUrl = c("https://cdn-icons-png.flaticon.com/512/985/985331.png"),
+  iconWidth = territory_border/100,
+  iconHeight = territory_border/100
+)
+
+# Creating leaflet map with polygons and markers
+leaflet::leaflet() |>
+  leaflet::addPolygons(data = polytest,
+              fillOpacity = 0,
+              color = "red",
+              weight = 1) |>
+  leaflet::addPolygons(data = inscribed,
+                       fillOpacity = 0,
+                       color = "blue",
+                       weight = 1) |>
+  leaflet::addMarkers(data = polytest$centroid,
+                      icon = icons)
+```
+
+Selecting another polygon from the nc dataset. The previous method does not work as well for this polygon.
+
+```{r}
+polytest <- nc[4,15]
+
+# creating geometry of inscribed circle
+inscribed <- inscribed_circle(polytest)
+
+# calculating size of inscribed polygon
+polytest$centroid <- sf::st_centroid(polytest)
+territory_border <- sf::st_length(sf::st_nearest_points(polytest$geometry,
+                                                        polytest$centroid,
+                                                        pairwise = TRUE))
+
+# scaling the marker relative to the inscribed polygon size
+icons <- leaflet::icons(
+  iconUrl = c("https://cdn-icons-png.flaticon.com/512/985/985331.png"),
+  iconWidth = territory_border/100,
+  iconHeight = territory_border/100
+)
+
+# Creating leaflet map with polygons and markers
+leaflet::leaflet() |>
+  leaflet::addPolygons(data = polytest,
+              fillOpacity = 0,
+              color = "red",
+              weight = 1) |>
+  leaflet::addPolygons(data = inscribed,
+                       fillOpacity = 0,
+                       color = "blue",
+                       weight = 1) |>
+  leaflet::addMarkers(data = polytest$centroid,
+                      icon = icons)
+```
+
+Calculating the convex hull of the polygon. Determining the distance between the polygon centroid and the closest point on the hull. It performs better for these decentralized shapes
+
+```{r}
+polytest <- nc[4,15]
+
+# creating hull of polygon to better encapsulate region
+polytest_hull <- sf::st_convex_hull(polytest)
+
+# creating geometry of inscribed circle
+inscribed <- inscribed_circle(polytest_hull)
+
+# calculating size of inscribed polygon
+polytest_hull$centroid <- sf::st_centroid(polytest_hull)
+territory_border <- sf::st_length(sf::st_nearest_points(polytest_hull$geometry,
+                                                        polytest_hull$centroid,
+                                                       pairwise = TRUE))
+
+# scaling the marker relative to the inscribed polygon size
+icons <- leaflet::icons(
+  iconUrl = c("https://cdn-icons-png.flaticon.com/512/985/985331.png"),
+  iconWidth = territory_border/100,
+  iconHeight = territory_border/100
+)
+
+# Creating leaflet map with polygons and markers
+leaflet::leaflet() |>
+  leaflet::addPolygons(data = polytest,
+              fillOpacity = 0,
+              color = "red",
+              weight = 1) |>
+  leaflet::addPolygons(data = inscribed,
+                       fillOpacity = 0,
+                       color = "blue",
+                       weight = 1) |>
+  leaflet::addMarkers(data = polytest_hull$centroid,
+                      icon = icons)
+```
+
+Plotting random polygon from nc dataset with convex hull method. Problem still seems to be the lat/long distance to pixels conversion.
+
+```{r}
+polytest <- nc[sample(1:100,1),15]
+
+# creating hull of polygon to better encapsulate region
+polytest_hull <- sf::st_convex_hull(polytest)
+
+# creating geometry of inscribed circle
+inscribed <- inscribed_circle(polytest_hull)
+
+# calculating size of inscribed polygon
+polytest_hull$centroid <- sf::st_centroid(polytest_hull)
+territory_border <- sf::st_length(sf::st_nearest_points(polytest_hull$geometry,
+                                                        polytest_hull$centroid,
+                                                       pairwise = TRUE))
+
+# scaling the marker relative to the inscribed polygon size
+icons <- leaflet::icons(
+  iconUrl = c("https://cdn-icons-png.flaticon.com/512/985/985331.png"),
+  iconWidth = territory_border/100,
+  iconHeight = territory_border/100
+)
+
+# Creating leaflet map with polygons and markers
+leaflet::leaflet() |>
+  leaflet::addPolygons(data = polytest,
+              fillOpacity = 0,
+              color = "red",
+              weight = 1) |>
+  leaflet::addPolygons(data = inscribed,
+                       fillOpacity = 0,
+                       color = "blue",
+                       weight = 1) |>
+  leaflet::addMarkers(data = polytest_hull$centroid,
+                      icon = icons)
+```
