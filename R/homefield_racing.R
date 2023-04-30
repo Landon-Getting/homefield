@@ -275,10 +275,10 @@ homefield_racing <- function(x,
                                                         color="grey"),
                    plot.background = ggplot2::element_blank(),
                    plot.margin = ggplot2::margin(2, 6, 2, 10, "cm")) +
-                    ggimage::geom_image(ggplot2::aes(image = "./inst/figures/sticker.png",
+                   ggimage::geom_image(ggplot2::aes(image = "./inst/figures/sticker.png",
                                                     x = 8,
                                                     y = max(get(stat_name))),
-                                         size = 0.2)
+                                       size = 0.2)
 
   cli::cli_alert_info("Animating...")
   # Animating -----------------------------------------------------------------

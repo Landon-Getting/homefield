@@ -39,15 +39,15 @@ inscribed <- inscribed_circle(polytest)
 
 # calculating size of inscribed polygon
 polytest$centroid <- sf::st_centroid(polytest)
-territory_border <- sf::st_length(sf::st_nearest_points(polytest$geometry,
+iconsize_max <- sf::st_length(sf::st_nearest_points(polytest$geometry,
                                                         polytest$centroid,
                                                         pairwise = TRUE))
 
 # scaling the marker relative to the inscribed polygon size
 icons <- leaflet::icons(
   iconUrl = c("https://cdn-icons-png.flaticon.com/512/985/985331.png"),
-  iconWidth = territory_border/100,
-  iconHeight = territory_border/100
+  iconWidth = iconsize_max/100, # scaling by 100 otherwise icon would not be visible
+  iconHeight = iconsize_max/100
 )
 
 # Creating leaflet map with polygons and markers

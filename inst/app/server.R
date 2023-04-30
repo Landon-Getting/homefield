@@ -143,12 +143,13 @@ function(input, output) {
 
     leaflet::leaflet(options = leaflet::leafletOptions(crs = epsg2163,
                                                        zoomControl = FALSE,
-                                                       zoomSnap = 0.1,
-                                                       zoomDelta = 1),
+                                                       minZoom = 3.3,
+                                                       maxZoom = 3.3,
+                                                       dragging = FALSE),
                      height = 2000,
                      width = 3200) |>
       leaflet::setView(lng = -100.64580,
-                       lat = 38.05909,
+                       lat = 37.05909,
                        zoom = 3.3) |>
       leaflet::addPolylines(data = states,
                             color = "black",

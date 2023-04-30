@@ -70,6 +70,13 @@ temporal_stats <- homefield_stats(x = x_input,
 temporal_stats_plot <- temporal_stats |>
   dplyr::mutate(land = land/2.59e6)
 
+x <- temporal_stats_plot
+stat_name = "land"
+title = "2022 Season Week by Week - Undefeated CFB homefield Map"
+subtitle = "Area in Square Miles"
+caption = "Data Source: cfbd.com"
+output_file = "C:/Users/lwget/Downloads/cfb_undefeated_s2022_racing.gif"
+
 homefield_racing(x = temporal_stats_plot,
                 stat_name = "land",
                 title = "2022 Season Week by Week - Undefeated CFB homefield Map",
