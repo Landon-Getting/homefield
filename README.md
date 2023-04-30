@@ -1,11 +1,11 @@
 
-# homefield
+# homefield <img src="man/figures/logo.png" align="right" height="139" />
 
 ## Overview
 
 The homefield package helps gather data and create visualizations to
 show representation of entities spatially.
-![](./inst/figures/example_map.png)
+![](man/figures/example_map.png)
 
 ## Installation
 
@@ -82,7 +82,7 @@ homefield_map(x = homefield_data, # dataframe
              credit = "Landon Getting") # credit for author
 ```
 
-![](./inst/figures/homefield_map1.png)
+![](man/figures/homefield_map1.png)
 
 The homefield package currently provides 2 functions to query
 interesting college football data directly into the necessary format:
@@ -120,7 +120,7 @@ homefield_map(x = cfb_undefeated_s1999_w4,
              credit = "Landon Getting")
 ```
 
-![](./inst/figures/example_map.png)
+![](man/figures/example_map.png)
 
 ## homefield_stats
 
@@ -269,14 +269,14 @@ homefield_racing(x = cfb_undefeated_2022_stats,
                 output_file = "C:/Users/lwget/Downloads/cfb_undefeated_2022_racing.gif")
 ```
 
-![](./inst/figures/homefield_racing.png)
+![](man/figures/homefield_racing.png)
 
 ## homefield_shiny
 
 `homefield_shiny()` showcases several functions from the homefield
 package in an interactive application. Users can choose a type of map,
 season, and week and the homefield map will be automatically generated.
-![](./inst/figures/homefield_shiny.png)
+![](man/figures/homefield_shiny.png)
 
 ## Acknowledgements
 

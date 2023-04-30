@@ -382,7 +382,7 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
                        size = 700,
                        family = "Open Sans Extrabold") +
     # hex sticker
-    ggimage::geom_image(ggplot2::aes(image = "./inst/figures/sticker.png",
+    ggimage::geom_image(ggplot2::aes(image = "./man/figures/sticker.png",
                                      x = 250/3200, # 250  pixels from the left
                                      y = 1-(215/2000)), # 225 pixels from the top
                         size = 0.090,

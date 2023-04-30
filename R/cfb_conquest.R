@@ -167,7 +167,7 @@ cfb_conquest <- function(season, week, division = "fbs"){
   # checking for missing logos
   if (any(is.na(teams$image))) {
     # Fill in missing values with NCAA football logo
-    teams$image[is.na(teams$image)] <- "./inst/figures/no_logo.png"
+    teams$image[is.na(teams$image)] <- "man/figures/no_logo.png"
   }
 
   return(teams)

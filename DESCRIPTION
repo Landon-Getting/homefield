@@ -36,10 +36,12 @@ Imports:
   gganimate,
   ggpattern,
   lubridate,
-  scales
+  scales,
+  shiny
 Encoding: UTF-8
 LazyData: true
-URL: https://github.com/Landon-Getting/territorymap
+URL: https://github.com/Landon-Getting/territorymap,
+    https://landon-getting.github.io/homefield/
 BugReports: https://github.com/Landon-Getting/territorymap/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
