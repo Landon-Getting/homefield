@@ -9,8 +9,12 @@
 #' @export
 #'
 #' @examples
-#' cfb_undefeated(season = 2016, week = 8)
+#' \dontrun{cfb_undefeated(season = 2016, week = 8)}
 cfb_undefeated <- function(season, week){
+
+  # passes cmd check
+  home_points <- home_id <- away_id <- away_points <- loser <- school <- NULL
+  latitude <- longitude <- best_color <- best_logo <- NULL
 
   alt_color_list <- get0("alt_color_list", envir = asNamespace("homefield"))
   alt_logo_list <- get0("alt_logo_list", envir = asNamespace("homefield"))
@@ -54,14 +58,14 @@ cfb_undefeated <- function(season, week){
 
     losers <- game_info |>
       dplyr::mutate(
-        winner = dplyr::if_else(.data$home_points > .data$away_points,
-                                .data$home_id,
-                                .data$away_id),
-        loser = dplyr::if_else(.data$home_points < .data$away_points,
-                               .data$home_id,
-                               .data$away_id)
+        winner = dplyr::if_else(home_points > away_points,
+                                home_id,
+                                away_id),
+        loser = dplyr::if_else(home_points < away_points,
+                               home_id,
+                               away_id)
       ) |>
-      dplyr::select(.data$loser) |>
+      dplyr::select(loser) |>
       unique()
 
     teams <- cfbfastR::cfbd_team_info(only_fbs = TRUE, year = season)
@@ -73,29 +77,29 @@ cfb_undefeated <- function(season, week){
   # getting best colors
   teams <- teams |>
     dplyr::mutate(best_color = dplyr::case_when(
-      .data$school %in% alt_color_list ~ alt_color,
-      !.data$school %in% alt_color_list ~ color
+      school %in% alt_color_list ~ alt_color,
+      !school %in% alt_color_list ~ color
     ))
 
   # getting best logos
   teams <- teams |>
     dplyr::mutate(best_logo = dplyr::case_when(
-      .data$school %in% alt_logo_list ~ logo_2,
-      !.data$school %in% alt_logo_list ~ logo
+      school %in% alt_logo_list ~ logo_2,
+      !school %in% alt_logo_list ~ logo
     ))
 
   teams <- teams |>
-    dplyr::arrange(.data$school) |>
-    dplyr::select(.data$school,
-                  .data$latitude,
-                  .data$longitude,
-                  .data$best_color,
-                  .data$best_logo) |>
-    dplyr::rename(entity = .data$school,
-                  lat = .data$latitude,
-                  lng = .data$longitude,
-                  color = .data$best_color,
-                  image = .data$best_logo)
+    dplyr::arrange(school) |>
+    dplyr::select(school,
+                  latitude,
+                  longitude,
+                  best_color,
+                  best_logo) |>
+    dplyr::rename(entity = school,
+                  lat = latitude,
+                  lng = longitude,
+                  color = best_color,
+                  image = best_logo)
 
   if (any(is.na(teams$color))) {
     # Fill in missing values with white

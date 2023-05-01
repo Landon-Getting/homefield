@@ -13,6 +13,12 @@
 #' \dontrun{cfb_conquest(season = 2016, week = 8)}
 cfb_conquest <- function(season, week, division = "fbs"){
 
+  # passes cmd check
+  classification <- school <- latitude <- longitude <- best_color <- best_logo <- NULL
+  home_points <- home_id <- away_id <- away_points <- loser <- winner <- team_id <- NULL
+  alt_color <- logo <- logo_2 <- color <- entity <- lat <- lng <- image <- NULL
+
+
   alt_color_list <- get0("alt_color_list", envir = asNamespace("homefield"))
   alt_logo_list <- get0("alt_logo_list", envir = asNamespace("homefield"))
 
@@ -53,15 +59,15 @@ cfb_conquest <- function(season, week, division = "fbs"){
     # getting best colors
     teams <- teams |>
       dplyr::mutate(best_color = dplyr::case_when(
-        .data$school %in% alt_color_list ~ alt_color,
-        !.data$school %in% alt_color_list ~ color
+        school %in% alt_color_list ~ alt_color,
+        !school %in% alt_color_list ~ color
       ))
 
     # getting best logos
     teams <- teams |>
       dplyr::mutate(best_logo = dplyr::case_when(
-        .data$school %in% alt_logo_list ~ logo_2,
-        !.data$school %in% alt_logo_list ~ logo
+        school %in% alt_logo_list ~ logo_2,
+        !school %in% alt_logo_list ~ logo
       ))
 
     return(teams)
@@ -70,18 +76,18 @@ cfb_conquest <- function(season, week, division = "fbs"){
   if(week == 0){
 
     teams <- cfbfastR::cfbd_team_info(only_fbs = FALSE, year = season)|>
-      dplyr::filter(.data$classification %in% land_owners) |>
+      dplyr::filter(classification %in% land_owners) |>
       clean_teams() |>
-      dplyr::select(.data$school,
-                    .data$latitude,
-                    .data$longitude,
-                    .data$best_color,
-                    .data$best_logo) |>
-      dplyr::rename(entity = .data$school,
-                    lat = .data$latitude,
-                    lng = .data$longitude,
-                    color = .data$best_color,
-                    image = .data$best_logo)
+      dplyr::select(school,
+                    latitude,
+                    longitude,
+                    best_color,
+                    best_logo) |>
+      dplyr::rename(entity = school,
+                    lat = latitude,
+                    lng = longitude,
+                    color = best_color,
+                    image = best_logo)
 
   } else{
 
@@ -100,21 +106,21 @@ cfb_conquest <- function(season, week, division = "fbs"){
 
     game_info_select <- game_info |>
       dplyr::mutate(
-        winner = dplyr::if_else(.data$home_points > .data$away_points,
-                                .data$home_id,
-                                .data$away_id),
-        loser = dplyr::if_else(.data$home_points < .data$away_points,
-                               .data$home_id,
-                               .data$away_id)
+        winner = dplyr::if_else(home_points > away_points,
+                                home_id,
+                                away_id),
+        loser = dplyr::if_else(home_points < away_points,
+                               home_id,
+                               away_id)
       ) |>
-      dplyr::select(.data$winner,
-                    .data$loser)
+      dplyr::select(winner,
+                    loser)
 
     teams <- cfbfastR::cfbd_team_info(only_fbs = FALSE, year = season)|>
-      dplyr::filter(.data$classification %in% land_owners) |>
-      dplyr::select(.data$team_id,
-                    .data$latitude,
-                    .data$longitude)
+      dplyr::filter(classification %in% land_owners) |>
+      dplyr::select(team_id,
+                    latitude,
+                    longitude)
 
     for (i in 1:nrow(game_info_select)) {
       # Get the winner and loser team IDs
@@ -126,35 +132,35 @@ cfb_conquest <- function(season, week, division = "fbs"){
     }
 
     all_teams <- cfbfastR::cfbd_team_info(only_fbs = FALSE, year = season) |>
-      dplyr::select(.data$team_id,
-                    .data$school,
-                    .data$color,
-                    .data$alt_color,
-                    .data$logo,
-                    .data$logo_2) |>
+      dplyr::select(team_id,
+                    school,
+                    color,
+                    alt_color,
+                    logo,
+                    logo_2) |>
       clean_teams()
 
     all_teams <- all_teams |>
-      dplyr::select(.data$team_id,
-                    .data$school,
-                    .data$best_color,
-                    .data$best_logo)
+      dplyr::select(team_id,
+                    school,
+                    best_color,
+                    best_logo)
 
     teams <- dplyr::left_join(teams,
                               all_teams,
                               by = "team_id") |>
-      dplyr::rename(entity = .data$school,
-                    color = .data$best_color,
-                    image = .data$best_logo,
-                    lat = .data$latitude,
-                    lng = .data$longitude) |>
+      dplyr::rename(entity = school,
+                    color = best_color,
+                    image = best_logo,
+                    lat = latitude,
+                    lng = longitude) |>
       # selecting everything except for team_id
-      dplyr::select(.data$entity,
-                    .data$lat,
-                    .data$lng,
-                    .data$color,
-                    .data$image) |>
-      dplyr::arrange(.data$entity)
+      dplyr::select(entity,
+                    lat,
+                    lng,
+                    color,
+                    image) |>
+      dplyr::arrange(entity)
 
   }
 

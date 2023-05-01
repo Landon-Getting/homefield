@@ -98,6 +98,10 @@ homefield_stats <- function(x,
                           keep_max = FALSE,
                           keep_visuals = FALSE){
 
+  # passes cmd check
+  entity <- lat <- lng <- color <- image <- geometry <- STUSPS <- GEOID <- centroid <- NULL
+  distances <- area <- id <- ALAND <- AWATER <- value <- variable <- time <- population <- NULL
+
   if(!missing(keep_max) & !is.logical(keep_max)){
     stop("temporal must be a boolean value.")
   }
@@ -194,18 +198,18 @@ homefield_stats <- function(x,
   generate_stats <- function(input_df, visual_check){
 
     input_df_location <- input_df |>
-      dplyr::select(.data$entity,
-                    .data$lat,
-                    .data$lng)
+      dplyr::select(entity,
+                    lat,
+                    lng)
 
     # converting lat/long to sf point object -------------------------------------
     input_df_location <-  sf::st_as_sf(input_df_location,
                                        coords = c("lng", "lat"),
                                        crs = 4326) |>
-      dplyr::rename(location = .data$geometry)
+      dplyr::rename(location = geometry)
 
     counties <- tigris::counties(cb = TRUE, progress_bar = FALSE) |>
-      dplyr::filter(!.data$STUSPS %in% STUSPS_filter) |> # filtering out territories
+      dplyr::filter(!STUSPS %in% STUSPS_filter) |> # filtering out territories
       sf::st_transform("+proj=longlat +datum=WGS84") |> # Reproject to WGS84
       suppressMessages()
 
@@ -214,7 +218,7 @@ homefield_stats <- function(x,
     # Calculating Distance between every county and entity -----------------------
     comparing_distances <- tidyr::expand_grid(input_df_location,
                                               counties |>
-                                                dplyr::select(.data$GEOID, .data$centroid) |>
+                                                dplyr::select(GEOID, centroid) |>
                                                 sf::st_drop_geometry())
 
     comparing_distances$location <- sf::st_as_sf(comparing_distances$location)
@@ -225,20 +229,20 @@ homefield_stats <- function(x,
                                                      by_element = TRUE)
 
     comparing_distances <- comparing_distances |>
-      dplyr::select(.data$GEOID,
-                    .data$entity,
-                    .data$distances) |>
-      dplyr::group_by(.data$GEOID) |>
-      dplyr::slice(which.min(.data$distances))
+      dplyr::select(GEOID,
+                    entity,
+                    distances) |>
+      dplyr::group_by(GEOID) |>
+      dplyr::slice(which.min(distances))
 
     # Create data frame to match each county to a school  ------------------------
     territory_map_df <- comparing_distances |>
-      dplyr::select(.data$GEOID,
-                    .data$entity) |>
+      dplyr::select(GEOID,
+                    entity) |>
       dplyr::left_join(counties |>
-                         dplyr::select(.data$GEOID,
-                                       .data$ALAND,
-                                       .data$AWATER),
+                         dplyr::select(GEOID,
+                                       ALAND,
+                                       AWATER),
                        by = "GEOID",
                        keep = FALSE)
 
@@ -248,10 +252,10 @@ homefield_stats <- function(x,
     # Getting population data  ---------------------------------------------------
     counties_pop <- tidycensus::get_estimates(geography = "county",
                                               product = "population") |>
-      dplyr::filter(.data$variable != "DENSITY") |>
-      dplyr::select(.data$GEOID,
-                    .data$value) |>
-      dplyr::rename(population = .data$value)
+      dplyr::filter(variable != "DENSITY") |>
+      dplyr::select(GEOID,
+                    value) |>
+      dplyr::rename(population = value)
 
     territory_map_df <- dplyr::left_join(territory_map_df,
                                          counties_pop,
@@ -260,18 +264,18 @@ homefield_stats <- function(x,
     # Calculating map stats  ---------------------------------------------------
 
     territory_map_df <- territory_map_df |>
-      dplyr::group_by(.data$entity) |>
-      dplyr::summarise(land = sum(.data$ALAND, na.rm = TRUE),
-                       water = sum(.data$AWATER, na.rm = TRUE),
-                       domain = sum(.data$ALAND, na.rm = TRUE) + sum(.data$AWATER, na.rm = TRUE),
-                       pop = sum(.data$population, na.rm = TRUE))
+      dplyr::group_by(entity) |>
+      dplyr::summarise(land = sum(ALAND, na.rm = TRUE),
+                       water = sum(AWATER, na.rm = TRUE),
+                       domain = sum(ALAND, na.rm = TRUE) + sum(AWATER, na.rm = TRUE),
+                       pop = sum(population, na.rm = TRUE))
 
     # keep_visuals = TRUE and checks pass, add color and image back in
     if(visual_check == TRUE){
       territory_map_df <- dplyr::left_join(territory_map_df,
-                                           input_df |> dplyr::select(.data$entity,
-                                                                     .data$color,
-                                                                     .data$image),
+                                           input_df |> dplyr::select(entity,
+                                                                     color,
+                                                                     image),
                                            by = "entity")
     }
 
@@ -324,11 +328,11 @@ homefield_stats <- function(x,
     for(i in 1:length(temporal)){
 
       if(i == 1){
-        starting_entities <- dplyr::filter(map_stats, .data$time == temporal[[i]])[[1]]
+        starting_entities <- dplyr::filter(map_stats, time == temporal[[i]])[[1]]
 
       } else{
 
-        current_entities <- dplyr::filter(map_stats, .data$time == temporal[[i]])[[1]]
+        current_entities <- dplyr::filter(map_stats, time == temporal[[i]])[[1]]
 
         # Find the missing elements in the current entities
         missing_entities <- setdiff(starting_entities, current_entities)
@@ -337,8 +341,8 @@ homefield_stats <- function(x,
 
           # get missing rows
           missing_rows <- map_stats |>
-            dplyr::filter(.data$time == temporal[[i - 1]],
-                          .data$entity %in% missing_entities) |>
+            dplyr::filter(time == temporal[[i - 1]],
+                          entity %in% missing_entities) |>
             dplyr::mutate(time = temporal[[i]])
 
           # Find the most recent row of each entity and rbind with current time
@@ -349,8 +353,8 @@ homefield_stats <- function(x,
 
           # get missing rows
           missing_rows <- map_stats |>
-            dplyr::filter(.data$time == temporal[[i - 1]],
-                          .data$entity %in% missing_entities) |>
+            dplyr::filter(time == temporal[[i - 1]],
+                          entity %in% missing_entities) |>
             dplyr::mutate(land = 0,
                           water = 0,
                           domain = 0,
@@ -364,7 +368,7 @@ homefield_stats <- function(x,
       }
     }
 
-    map_stats <- map_stats |> dplyr::arrange(.data$time, .data$entity)
+    map_stats <- map_stats |> dplyr::arrange(time, entity)
 
     # removes duplicate rows for when entity has multiple instances
     map_stats <- map_stats[!duplicated(map_stats[c("entity","time")]),]

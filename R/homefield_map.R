@@ -34,6 +34,9 @@
 #' \dontrun{homefield_map(x = cfb_data, output_file = paste0(getwd(),"/homefield_map_example.png"))}
 homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credit = NULL){
 
+  image <- entity <- lat <- lng <- geometry <- STUSPS <- GEOID <- centroid <- NULL
+  distances <- color <- image <- area <- id <- NULL
+
   # Performing input checks ---------------------------------------------------
 
   # setting expected column names
@@ -138,26 +141,26 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
   input_df <- x
 
   input_df_location <- input_df |>
-    dplyr::select(.data$entity,
-                  .data$lat,
-                  .data$lng)
+    dplyr::select(entity,
+                  lat,
+                  lng)
 
   # converting lat/long to sf point object -------------------------------------
   input_df_location <-  sf::st_as_sf(input_df_location,
                                   coords = c("lng", "lat"),
                                   crs = 4326) |>
-    dplyr::rename(location = .data$geometry)
+    dplyr::rename(location = geometry)
 
   cli::cli_alert_info("Querying map data...")
 
   states <- tigris::states(cb = TRUE, progress_bar = FALSE) |>
-    dplyr::filter(!.data$STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |>
+    dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |>
     tigris::shift_geometry() |>
     sf::st_transform("+proj=longlat +datum=WGS84") |>
     suppressMessages()
 
   counties <- tigris::counties(cb = TRUE, progress_bar = FALSE) |>
-    dplyr::filter(!.data$STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |> # filtering out territories
+    dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |> # filtering out territories
     sf::st_transform("+proj=longlat +datum=WGS84") |> # Reproject to WGS84
     suppressMessages()
 
@@ -168,7 +171,7 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
 
   comparing_distances <- tidyr::expand_grid(input_df_location,
                                             counties |>
-                                              dplyr::select(.data$GEOID, .data$centroid) |>
+                                              dplyr::select(GEOID, centroid) |>
                                               sf::st_drop_geometry())
 
   comparing_distances$location <- sf::st_as_sf(comparing_distances$location)
@@ -179,29 +182,29 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
                                                    by_element = TRUE)
 
   comparing_distances <- comparing_distances |>
-    dplyr::select(.data$GEOID,
-                  .data$entity,
-                  .data$distances) |>
-    dplyr::group_by(.data$GEOID) |>
-    dplyr::slice(which.min(.data$distances))
+    dplyr::select(GEOID,
+                  entity,
+                  distances) |>
+    dplyr::group_by(GEOID) |>
+    dplyr::slice(which.min(distances))
 
   # Create data frame for color mapping -----------------------------------------
   cli::cli_alert_info("Adding color to the mapping...")
 
   homefield_map_df <- comparing_distances |>
-    dplyr::select(.data$GEOID,
-                  .data$entity) |>
+    dplyr::select(GEOID,
+                  entity) |>
     dplyr::left_join(counties |>
                        tigris::shift_geometry() |> # shift Alaska and Hawaii below
                        sf::st_transform("+proj=longlat +datum=WGS84") |>
-                       dplyr::select(.data$GEOID,
-                                     .data$geometry),
+                       dplyr::select(GEOID,
+                                     geometry),
                                      by = "GEOID",
                                      keep = FALSE) |>
     dplyr::left_join(input_df |>
-                       dplyr::select(.data$entity,
-                                     .data$color,
-                                     .data$image)|>
+                       dplyr::select(entity,
+                                     color,
+                                     image)|>
                        dplyr::distinct(),
                      by = "entity",
                      keep = FALSE)
@@ -213,18 +216,18 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
 
   # Apply the function to the example data frame
   counties_grouped <- homefield_map_df |>
-    dplyr::group_by(.data$entity) |>
-    dplyr::summarise(geometry = suppressWarnings(sf::st_union(.data$geometry,
+    dplyr::group_by(entity) |>
+    dplyr::summarise(geometry = suppressWarnings(sf::st_union(geometry,
                                                               is_coverage = TRUE)))  # reduces calculation time
 
   counties_grouped <- sf::st_cast(counties_grouped |>
-                                    dplyr::select(.data$entity,
-                                                  .data$geometry),
+                                    dplyr::select(entity,
+                                                  geometry),
                                   "MULTIPOLYGON")
 
   counties_grouped <- sf::st_cast(counties_grouped |>
-                                    dplyr::select(.data$entity,
-                                                  .data$geometry),
+                                    dplyr::select(entity,
+                                                  geometry),
                                   "POLYGON") |>
                                   suppressWarnings()
 
@@ -237,21 +240,21 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
                   id = dplyr::row_number())
 
   largest_areas <- counties_grouped |>
-    dplyr::group_by(.data$entity) |>
-    dplyr::filter(.data$area == max(.data$area))
+    dplyr::group_by(entity) |>
+    dplyr::filter(area == max(area))
 
   above_threshold_areas <- counties_grouped |>
-    dplyr::group_by(.data$entity) |>
-    dplyr::filter(.data$area > threshold)
+    dplyr::group_by(entity) |>
+    dplyr::filter(area > threshold)
 
   image_areas <- dplyr::bind_rows(largest_areas, above_threshold_areas) |>
-    dplyr::distinct(.data$id, .keep_all = TRUE) |>
-    dplyr::arrange(.data$entity) |>
-    dplyr::mutate(centroid = sf::st_centroid(.data$geometry)) |>
-    dplyr::left_join(input_df |> dplyr::select(.data$entity,
-                                               .data$image),
+    dplyr::distinct(id, .keep_all = TRUE) |>
+    dplyr::arrange(entity) |>
+    dplyr::mutate(centroid = sf::st_centroid(geometry)) |>
+    dplyr::left_join(input_df |> dplyr::select(entity,
+                                               image),
                      by = "entity") |>
-    dplyr::arrange(.data$entity)
+    dplyr::arrange(entity)
 
   # Create logos for map --------------------------------------------------------
   cli::cli_alert_info("Adding images to map...")
@@ -292,7 +295,7 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
   }
 
   homefield_map_df <- homefield_map_df |>
-    dplyr::mutate(border_color = contrast_color(.data$color))
+    dplyr::mutate(border_color = contrast_color(color))
 
   # Reprojection
   epsg2163 <- leaflet::leafletCRS(

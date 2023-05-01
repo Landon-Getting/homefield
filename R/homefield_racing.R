@@ -101,6 +101,10 @@ homefield_racing <- function(x,
                             subtitle = "Value Label",
                             caption = "Data Source"){
 
+  # passes cmd check
+  entity <- lat <- lng <- color <- image <- geometry <- time <- population <- entity_lbl <- NULL
+
+
   cli::cli_h1("Generating homefield racing bar graph...")
 
   cli::cli_alert_info("Checking inputs...")
@@ -194,25 +198,25 @@ homefield_racing <- function(x,
 
   cli::cli_alert_info("Preparing data...")
   x_ready <- x |>
-    dplyr::group_by(.data$time) |>
+    dplyr::group_by(time) |>
     dplyr::mutate(rank = rank(-get(stat_name)),
                   entity_rel = get(stat_name)/get(stat_name)[rank==1],
                   entity_lbl = paste0(" ",round(get(stat_name)))) |>
-    dplyr::group_by(.data$entity) |>
+    dplyr::group_by(entity) |>
     dplyr::filter(rank <=10) |>
     dplyr::ungroup() |>
-    dplyr::arrange(.data$time, rank)|>
-    dplyr::mutate(entity_lbl = prettyNum(.data$entity_lbl,
+    dplyr::arrange(time, rank)|>
+    dplyr::mutate(entity_lbl = prettyNum(entity_lbl,
                                              big.mark = ","))
 
   cli::cli_alert_info("Creating static plot...")
 
   # Creating Static Plot-------------------------------------------------------
   static_plot <- ggplot2::ggplot(x_ready,
-                                 ggplot2::aes(group = .data$entity)) +
+                                 ggplot2::aes(group = entity)) +
     ggpattern::geom_rect_pattern(
-      ggplot2::aes(pattern_filename = I(.data$image),
-                   fill = .data$color,
+      ggplot2::aes(pattern_filename = I(image),
+                   fill = color,
                    ymin = 0,
                    ymax = get(stat_name),
                    xmin = rank - 0.45,
@@ -225,18 +229,18 @@ homefield_racing <- function(x,
     ggplot2::scale_fill_identity() +
     ggplot2::geom_text(ggplot2::aes(x = rank,
                                     y = 0,
-                                    label = paste(.data$entity, " ")),
+                                    label = paste(entity, " ")),
                        vjust = 0.2,
                        hjust = 1,
                        size = 10.5) +
     ggplot2::geom_text(ggplot2::aes(x = rank,
                                     y= get(stat_name),
-                                    label = .data$entity_lbl,
+                                    label = entity_lbl,
                                     hjust=0),
                        size = 10) +
     ggplot2::geom_text(ggplot2::aes(x=10,
                                     y=max(get(stat_name)),
-                                    label = as.factor(.data$time)),
+                                    label = as.factor(time)),
                        vjust = 0.2,
                        alpha = 0.5,
                        col = "gray",
@@ -278,7 +282,7 @@ homefield_racing <- function(x,
 
   cli::cli_alert_info("Animating...")
   # Animating -----------------------------------------------------------------
-  animated <- static_plot + gganimate::transition_states(.data$time,
+  animated <- static_plot + gganimate::transition_states(time,
                                                          transition_length = 8,
                                                          state_length = 2,
                                                          wrap = FALSE) +

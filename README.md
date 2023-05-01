@@ -1,9 +1,8 @@
 
-## Introduction
+## Introduction <img src="https://github.com/Landon-Getting/homefield-graphics/blob/main/sticker.png?raw=true" align="right" height="139" />
 
 The homefield package helps gather data and create visuals to show
-spatial relevance of entities. Learn more in the *Getting started with
-homefield* article.
+spatial relevance of entities.
 
 ![](https://github.com/Landon-Getting/homefield-graphics/blob/main/undefeated_map.png?raw=true)
 
@@ -23,7 +22,7 @@ homefield* article.
 install.packages("devtools")
 ```
 
-4.  Install the homefield package via the Github repository.
+4.  Install the homefield package via Github.
 
 ``` r
 devtools::install_github("Landon-Getting/homefield")
