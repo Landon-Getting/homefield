@@ -14,7 +14,7 @@ cfb_conquest(season, week, division = "fbs")
 \item{division}{(String required): What is the lowest division that should start off owning land? Acceptable inputs include "fbs" or "fcs". \emph{Defaults to "fbs"}.}
 }
 \value{
-Returns data frame prepared for hf_map().
+Returns data frame prepared for homefield_map().
 }
 \description{
 Provides a data frame with current college football conquest data during a particular season and week. The data frame is ready for plotting with hf_map().

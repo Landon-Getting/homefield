@@ -155,7 +155,8 @@ function(input, output) {
                             color = "black",
                             weight = 1,
                             smoothFactor = 0,
-                            opacity = 1)
+                            opacity = 1) |>
+      leaflet.extras::setMapWidgetStyle(list(background= "white"))
   })
 
   # Update territories

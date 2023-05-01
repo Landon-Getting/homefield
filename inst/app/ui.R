@@ -3,7 +3,7 @@ fluidPage(
   titlePanel(p("homefield - Interactive CFB Map", style = "color:#3474A7")),
   sidebarLayout(
     sidebarPanel(
-      column(width = 12, align = "center",img(src='sticker.png',height = "200px")),
+      column(width = 12, align = "center",img(src='https://github.com/Landon-Getting/homefield-graphics/blob/main/sticker.png?raw=true',height = "200px")),
       helpText(
         "Welcome to the homefield Shiny App!
         There are two college football datasets to visualize.

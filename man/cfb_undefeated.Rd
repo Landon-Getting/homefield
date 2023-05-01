@@ -12,7 +12,7 @@ cfb_undefeated(season, week)
 \item{week}{(Integer required): Week, values from 1-15, 1-14 for seasons pre-playoff (i.e. 2013 or eariler).}
 }
 \value{
-Returns data frame prepared for hf_map().
+Returns data frame prepared for homefield_map().
 }
 \description{
 Provides a data frame with the undefeated D1 College Football teams during a particular season and week. The data frame is ready for plotting with hf_map().

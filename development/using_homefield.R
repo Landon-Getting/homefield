@@ -1,10 +1,10 @@
 library(homefield)
 
-cfb_undefeated_s1999_w4 <- homefield::cfb_undefeated(season = 1999, week = 0)
+cfb_undefeated_s1999_w0 <- homefield::cfb_undefeated(season = 1999, week = 0)
 
-homefield_map(x = cfb_undefeated_s1999_w4,
-             output_file = "C:/Users/lwget/Downloads/cfb_undefeated_s2022_w6.png",
-             title = "College Football Undefeated - Season 1999 Week 4",
+homefield_map(x = cfb_undefeated_s1999_w0,
+             output_file = "C:/Users/lwget/Downloads/cfb_undefeated_s2022_w0.png",
+             title = "College Football Undefeated - Season 1999 Week 0",
              credit = "Landon Getting")
 
 

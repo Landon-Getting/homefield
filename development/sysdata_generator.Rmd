@@ -1,0 +1,191 @@
+---
+title: "homefield"
+---
+This document generates the data for the .sysdata.rda file.
+
+```{r}
+entity <- c("Iowa State Cyclones", "Florida Gators", "UCLA Bruins")
+
+# must be valid locations
+lat <- c(42.01400, 29.64994, 34.16133)
+lng <- c(-93.63577, -82.34858, -118.16765)
+
+# must be a color in hexcode format
+color <- c("#660015","#0021A5", "#ffc72c")
+
+# can be a link or local file
+image <- c("http://a.espncdn.com/i/teamlogos/ncaa/500/66.png",
+           "http://a.espncdn.com/i/teamlogos/ncaa/500/57.png",
+           "http://a.espncdn.com/i/teamlogos/ncaa/500/26.png")
+
+homefield_data <- data.frame(entity,
+                             lat,
+                             lng,
+                             color,
+                             image)
+
+homefield_data
+```
+
+```{r, message = FALSE, warning = FALSE}
+cfb_undefeated_s1999_w4 <- cfb_undefeated(season = 1999, week = 4)
+
+cfb_undefeated_s1999_w4 <- head(cfb_undefeated_s1999_w4)
+```
+
+```{r, message = FALSE, warning = FALSE}
+cfb_conquest_s1999_w4 <- cfb_conquest(season = 1999, week = 4)
+
+cfb_conquest_s1999_w4 <- head(cfb_conquest_s1999_w4)
+```
+
+```{r, message = FALSE, warning = FALSE}
+cfb_undefeated_s1999_w4_stats <- homefield_stats(x = cfb_undefeated(season = 1999, week = 4))
+
+cfb_undefeated_s1999_w4_stats <- head(cfb_undefeated_s1999_w4_stats)
+
+```
+
+```{r}
+top_5_by_pop <- dplyr::slice_max(cfb_undefeated_s1999_w4_stats, # output from homefield_stats()
+                 order_by = pop, # sorting by population
+                 n = 5) |> # top 5
+  dplyr::select(entity, # selecting only entity and pop columns
+                pop)
+```
+
+```{r, results = 'hide', message = FALSE, warning = FALSE}
+# undefeated for each week, 0 through 15
+cfb_undefeated_2022 <- list(cfb_undefeated(season = 2022, week = 0),
+                            cfb_undefeated(season = 2022, week = 1),
+                            cfb_undefeated(season = 2022, week = 2),
+                            cfb_undefeated(season = 2022, week = 3),
+                            cfb_undefeated(season = 2022, week = 4),
+                            cfb_undefeated(season = 2022, week = 5),
+                            cfb_undefeated(season = 2022, week = 6),
+                            cfb_undefeated(season = 2022, week = 7),
+                            cfb_undefeated(season = 2022, week = 8),
+                            cfb_undefeated(season = 2022, week = 9),
+                            cfb_undefeated(season = 2022, week = 10),
+                            cfb_undefeated(season = 2022, week = 11),
+                            cfb_undefeated(season = 2022, week = 12),
+                            cfb_undefeated(season = 2022, week = 13),
+                            cfb_undefeated(season = 2022, week = 14),
+                            cfb_undefeated(season = 2022, week = 15))
+
+# date of each week
+cfb_dates_2022 <- lubridate::ymd(c("2022-08-27",
+                                   "2022-09-03",
+                                   "2022-09-10",
+                                   "2022-09-17",
+                                   "2022-09-24",
+                                   "2022-10-1",
+                                   "2022-10-8",
+                                   "2022-10-15",
+                                   "2022-10-22",
+                                   "2022-10-29",
+                                   "2022-11-5",
+                                   "2022-11-12",
+                                   "2022-11-19",
+                                   "2022-11-26",
+                                   "2022-12-3",
+                                   "2022-12-10"))
+
+cfb_undefeated_2022_stats <- homefield_stats(x = cfb_undefeated_2022,
+                                  temporal = cfb_dates_2022,
+                                  keep_max = FALSE,
+                                  keep_visuals = TRUE)
+
+```
+
+```{r}
+alabama_stats <- cfb_undefeated_2022_stats |>
+  dplyr::filter(entity == "Alabama") |>
+  dplyr::select(entity, pop, time) |>
+  head()
+```
+
+
+```{r}
+cfb_undefeated_2022_stats <- cfb_undefeated_2022_stats |>
+  dplyr::mutate(land = land/2.59e6) |>
+  dplyr::select(entity,
+                land,
+                time,
+                color,
+                image)
+
+cfb_undefeated_2022_stats <- head(cfb_undefeated_2022_stats)
+```
+
+
+```{r}
+alt_color_list = c("Akron",
+                   "Baylor",
+                   "Charlotte",
+                   "Houston",
+                   "Iowa",
+                   "Kent State",
+                   "LSU",
+                   "Maryland",
+                   "Minnesota",
+                   "Montana",
+                   "NC State",
+                   "North Texas",
+                   "Northwestern",
+                   "SMU",
+                   "Temple",
+                   "Tennessee",
+                   "Tulsa",
+                   "UC Davis",
+                   "UCLA",
+                   "UMass",
+                   "USC",
+                   "Utah State",
+                   "Wisconsin",
+                   "Ohio State",
+                   "Purdue")
+
+alt_logo_list = c("Air Force",
+                  "Alabama",
+                  "Boston College",
+                  "BYU",
+                  "California",
+                  "Cincinnati",
+                  "Clemson",
+                  "Duke",
+                  "Indiana",
+                  "James Madison",
+                  "Kansas State",
+                  "Kentucky",
+                  "LSU",
+                  "Michigan",
+                  "Michigan State",
+                  "Nevada",
+                  'Oklahoma',
+                  "Oregon",
+                  "Pittsburgh",
+                  "Rice",
+                  "San Diego State",
+                  "TCU",
+                  "Texas",
+                  "Texas A&M",
+                  "Wake Forest",
+                  "Washington State")
+```
+
+
+```{r}
+usethis::use_data(alt_color_list, 
+                  alt_logo_list, 
+                  homefield_data,
+                  cfb_undefeated_s1999_w4,
+                  cfb_conquest_s1999_w4,
+                  cfb_undefeated_s1999_w4_stats,
+                  top_5_by_pop,
+                  cfb_undefeated_2022_stats,
+                  alabama_stats,
+                  overwrite = TRUE,
+                  internal = TRUE)
+```
+

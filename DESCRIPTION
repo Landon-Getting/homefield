@@ -39,7 +39,8 @@ Imports:
   scales,
   shiny,
   knitr,
-  rmarkdown
+  rmarkdown,
+  leaflet.extras
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/Landon-Getting/homfield/,

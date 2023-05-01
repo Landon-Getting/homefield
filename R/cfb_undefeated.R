@@ -105,7 +105,7 @@ cfb_undefeated <- function(season, week){
   # checking for missing logos
   if (any(is.na(teams$image))) {
     # Fill in missing values with NCAA football logo
-    teams$image[is.na(teams$image)] <- "man/figures/no_logo.png"
+    teams$image[is.na(teams$image)] <- "https://github.com/Landon-Getting/homefield-graphics/blob/main/no_logo.png?raw=true"
   }
 
   return(teams)

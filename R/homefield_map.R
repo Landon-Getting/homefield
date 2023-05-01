@@ -34,10 +34,6 @@
 #' \dontrun{homefield_map(x = cfb_data, output_file = paste0(getwd(),"/homefield_map_example.png"))}
 homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credit = NULL){
 
-  # TO DO
-  # improve logo size generation
-  # what if no undefeated
-
   # Performing input checks ---------------------------------------------------
 
   # setting expected column names
@@ -334,7 +330,8 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
                           color = "black",
                           weight = 1,
                           smoothFactor = 0,
-                          opacity = 1)
+                          opacity = 1) |>
+    leaflet.extras::setMapWidgetStyle(list(background= "white"))
 
 
   # Saving the PNG -------------------------------------------------------------
@@ -373,16 +370,14 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
     ggplot2::geom_text(ggplot2::aes(x = 0.5,
                                     y = 0.9,
                                     label = title_text),
-                       size = 1500,
-                       family = "Open Sans Extrabold",
+                       size = 1600,
                        fontface = "bold") +
     ggplot2::geom_text(ggplot2::aes(x = 0.5,
                                     y = 0.03,
                                     label = credit_text),
-                       size = 700,
-                       family = "Open Sans Extrabold") +
+                       size = 800) +
     # hex sticker
-    ggimage::geom_image(ggplot2::aes(image = "./man/figures/sticker.png",
+    ggimage::geom_image(ggplot2::aes(image = "https://github.com/Landon-Getting/homefield-graphics/blob/main/sticker.png?raw=true",
                                      x = 250/3200, # 250  pixels from the left
                                      y = 1-(215/2000)), # 225 pixels from the top
                         size = 0.090,

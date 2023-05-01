@@ -274,11 +274,7 @@ homefield_racing <- function(x,
                                                         face="italic",
                                                         color="grey"),
                    plot.background = ggplot2::element_blank(),
-                   plot.margin = ggplot2::margin(2, 6, 2, 10, "cm")) +
-                   ggimage::geom_image(ggplot2::aes(image = "./man/figures/sticker.png",
-                                                    x = 8,
-                                                    y = max(get(stat_name))),
-                                       size = 0.2)
+                   plot.margin = ggplot2::margin(2, 6, 2, 10, "cm"))
 
   cli::cli_alert_info("Animating...")
   # Animating -----------------------------------------------------------------
@@ -292,14 +288,18 @@ homefield_racing <- function(x,
     gganimate::exit_fade() +
     ggplot2::labs(title = title,
                   subtitle  =  subtitle,
-                  caption  = caption)
+                  caption  = caption) +
+    ggimage::geom_image(ggplot2::aes(image = "https://github.com/Landon-Getting/homefield-graphics/blob/main/sticker.png?raw=true",
+                                     x = 8,
+                                     y = max(get(stat_name))),
+                        size = 0.2)
 
   cli::cli_alert_info("Rendering...")
   # Rendering ------------------------------------------------------------------
   gganimate::animate(animated,
-                     nframes = 150,
-                     fps = 5,
-                     end_pause = 10,
+                     nframes = 300,
+                     fps = 10,
+                     end_pause = 15,
                      width = 1500,
                      height = 1000,
                      renderer = gganimate::gifski_renderer(output_file))
