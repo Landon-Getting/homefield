@@ -8,10 +8,10 @@ knitr::opts_chunk$set(
 )
 ```
 
-# homefield <img src="man/figures/logo.png" align="right" height="139" />
+# homefield <img src="man/figures/sticker.png" align="right" height="139" />
 
 ## Overview
-The homefield package helps gather data and create visualizations to show representation of entities spatially.
+The homefield package helps gather data and create visuals to show spatial relevance of entities.
 ![](man/figures/example_map.png)
 
 ## Installation
@@ -64,7 +64,7 @@ homefield_data
 Next, the homefield map can be plotted with the dataframe and saved as a .png file to a specified location. 
 ```{r, eval = FALSE}
 homefield_map(x = homefield_data, # dataframe
-             output_file = "C:/Users/lwget/Downloads/example_map.png", # save location
+             output_file = "C:/Users/darthvader/Downloads/example_map.png", # save location
              title = "Example Map", # map title
              credit = "Landon Getting") # credit for author
 ```
@@ -85,7 +85,7 @@ The dataframe output from `cfb_undefeated()` can be used directly in `homefield_
 
 ```{r, eval = FALSE}
 homefield_map(x = cfb_undefeated_s1999_w4,
-             output_file = "C:/Users/lwget/Downloads/cfb_undefeated_s2022_w4.png",
+             output_file = "C:/Users/darthvader/Downloads/cfb_undefeated_s2022_w4.png",
              title = "College Football Undefeated - Season 1999 Week 4",
              credit = "Landon Getting")
 
@@ -187,7 +187,7 @@ homefield_racing(x = cfb_undefeated_2022_stats,
                 title = "2022 Season Week by Week - Undefeated CFB homefield Map",
                 subtitle = "Area in Square Miles",
                 caption = "Data Source: cfbd.com",
-                output_file = "C:/Users/lwget/Downloads/cfb_undefeated_2022_racing.gif")
+                output_file = "C:/Users/darthvader/Downloads/cfb_undefeated_2022_racing.gif")
 ```
 
 ![](man/figures/homefield_racing.png)

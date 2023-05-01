@@ -6,7 +6,7 @@
 #' @param division (String required): What is the lowest division that should start off owning land? Acceptable inputs include "fbs" or "fcs". \emph{Defaults to "fbs"}.
 #'
 #' @importFrom rlang .data
-#' @return Returns data frame prepared for hf_map().
+#' @return Returns data frame prepared for homefield_map().
 #' @export
 #'
 #' @examples

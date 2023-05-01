@@ -1,0 +1,263 @@
+---
+title: "homefield"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{homefield}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(homefield)
+```
+
+## Introduction to the homefield R Package
+
+The homefield package helps gather data and create visuals to show spatial relevance of entities. By producing engaging graphics, homefield can answer questions like:
+
+- Which teams are remaining in the March Madness basketball tournament?
+- Where was each U.S. President from?
+- What teams are undefeated in college football?
+
+For example, homefield can query online databases to determine which football teams were undefeated in the fourth week of the 1999 season and then generate a map where the teams are represented by their school colors and logo. 
+
+
+![](../man/figures/example_map.png)
+
+
+## Installation
+First, install the package via GitHub in the R console:
+
+```{r, eval = FALSE}
+install_github("Landon-Getting/homefield")
+```
+
+homefield relies on two online databases for up-to-date college football and census information. These databases require API keys which can be requested and installed via the following instructions:
+
+Follow the directions [here](https://cfbfastr.sportsdataverse.org/#college-football-data-api-keys) to receive and install a College Football Data API Key. Required for `homefield::cfb_undefeated()` and `homefield::cfb_conquest()`.
+
+Follow the directions [here](https://walker-data.com/tidycensus/reference/census_api_key.html) to receive and install a CENSUS API Key. Required for `homefield::homefield_stats()`.
+
+## homefield_map
+
+`homefield_map()` is the crux of the homefield package. It uses structured data about entities and generates a homefield map. `homefield_map()` colors counties based on the closest entity and adds an image representing the entity over large groups of counties. 
+
+Entities could be sports teams, political candidates, businesses, or anything that might be represented spatially or possess territory. Users can create their own data describing entities or use other homefield package functions like `cfb_undefeated()` to generate already structured data. 
+
+Entities are required to have several attributes including identifier, latitude, longitude, color, and image. Each entity should be encoded as a row in a dataframe of entities. 
+
+For instance, a map may be composed of sport teams. The Iowa State Cyclones entity would have an entity identifier (`Iowa State`), a latitude (`42.0266573`), a longitude (`-93.6464516`), a color (`#C8102E`), and an image (`http://a.espncdn.com/i/teamlogos/ncaa/500/66.png`). 
+
+A dataframe with multiple entities and their attributes may look similar to the following:
+
+```{r}
+entity <- c("Iowa State Cyclones", "Florida Gators", "UCLA Bruins")
+
+# must be valid locations
+lat <- c(42.01400, 29.64994, 34.16133)
+lng <- c(-93.63577, -82.34858, -118.16765)
+
+# must be a color in hexcode format
+color <- c("#660015","#0021A5", "#ffc72c")
+
+# can be a link or local file
+image <- c("http://a.espncdn.com/i/teamlogos/ncaa/500/66.png",
+           "http://a.espncdn.com/i/teamlogos/ncaa/500/57.png",
+           "http://a.espncdn.com/i/teamlogos/ncaa/500/26.png")
+
+homefield_data <- data.frame(entity,
+                             lat,
+                             lng,
+                             color,
+                             image)
+
+homefield_data
+```
+
+Next, the dataframe is inputted into the `homefield_map()` function along with a valid local file path for saving the map. Additionally, there are optional arguments to change where images are placed *(threshold)*, add a title *(title)*, and give credit to the map author *(credit)*.
+
+```{r, eval = FALSE}
+homefield_map(x = homefield_data, # dataframe
+             output_file = "C:/Users/darthvader/Downloads/example_map.png", # save location
+             threshold = 10000, # area in square km
+             title = "Example Map", # map title
+             credit = "Landon Getting") # credit for author
+```
+
+![](../man/figures/homefield_map1.png)
+In this case, UCLA's territory includes most of the western U.S. since they are located in California whereas the Florida Gators are located in the southeast. 
+
+UCLA's territory also extends to Alaska and Hawaii. Although these regions are disconnected from their primarly territory, their area is well above the default threshold of 10K KM^2 and therefore the UCLA image are placed at their centers.
+
+## Getting data for homefield maps
+
+In the previous example, the input dataframe describing the entities was created from scratch. 
+
+However, the homefield package currently provides 2 functions to query interesting college football data directly into the structured format: `cfb_undefeated()` and `cfb_conquest()`. Remember to complete the steps in *Installation* to receive and install an College Football Database API key.
+
+
+### cfb_undefeated()
+
+`cfb_undefeated()` returns a dataframe with the undefeated teams for a particular season and week. 
+```{r, message = FALSE, warning = FALSE}
+cfb_undefeated_s1999_w4 <- cfb_undefeated(season = 1999, week = 4)
+
+head(cfb_undefeated_s1999_w4)
+```
+
+The dataframe output from `cfb_undefeated()` can be used directly in `homefield_map()`.
+
+```{r, eval = FALSE, message = FALSE, warning = FALSE}
+homefield_map(x = cfb_undefeated(season = 1999, week = 4),
+             output_file = "C:/Users/darthvader/Downloads/cfb_undefeated_s2022_w4.png",
+             title = "College Football Undefeated - Season 1999 Week 4",
+             credit = "Landon Getting")
+```
+![](../man/figures/example_map.png)
+
+
+### cfb_conquest()
+
+In `cfb_conquest()`, teams start with the land closest to them. As the season progresses, teams acquire the land of the teams they defeat. 
+
+```{r, message = FALSE, warning = FALSE}
+cfb_conquest_s1999_w4 <- cfb_conquest(season = 1999, week = 4)
+
+head(cfb_conquest_s1999_w4)
+```
+
+The dataframe output from `cfb_conquest()` can be used directly in `homefield_map()`.
+
+```{r, eval = FALSE, message = FALSE, warning = FALSE}
+homefield_map(x = cfb_conquest(season = 1999, week = 4),
+             output_file = "C:/Users/darthvader/Downloads/cfb_conquest_s2022_w4.png",
+             title = "College Football Conquest - Season 1999 Week 4",
+             credit = "Landon Getting")
+```
+
+![](../man/figures/conquest_map.png)
+Since Iowa State University defeated UNLV in week 3 of the 1999 season, they gained UNLV's territory.
+
+`cfb_conquest()` has an additional argument, **division**, that allows NCAA D1 FCS teams to start with land in addition to the FBS teams.
+
+
+## Summarizing maps with homefield_stats()
+`homefield_stats()` generates summary statistics about a particular map including the total land, water, and population within each entity's territory.
+
+The same dataframe input used in `homefield_map()` can be used in `homefield_stats()`. 
+
+```{r}
+cfb_undefeated_s1999_w4_stats <- homefield_stats(x = cfb_undefeated(season = 1999, week = 4))
+
+head(cfb_undefeated_s1999_w4_stats)
+
+```
+
+These summary statistics can be used to further explore the data and answer questions like:
+
+- Which teams had the most territory at the start of the season?
+- Did any teams control more water than land in week 7?
+- What were the top 5 teams by population located within their territory?
+
+```{r}
+dplyr::slice_max(cfb_undefeated_s1999_w4_stats, # output from homefield_stats()
+                 order_by = pop, # sorting by population
+                 n = 5) |> # top 5
+  dplyr::select(entity, # selecting only entity and pop columns
+                pop)
+```
+
+`homefield_stats()` can also create summary statistics for maps over time using the *temporal* argument. For example, `homefield_stats()` can be combined with `cfb_undefeated()` to show statistics over the course of a season. 
+
+```{r, results = 'hide', message = FALSE, warning = FALSE}
+# undefeated for each week, 0 through 15
+cfb_undefeated_2022 <- list(cfb_undefeated(season = 2022, week = 0),
+                            cfb_undefeated(season = 2022, week = 1),
+                            cfb_undefeated(season = 2022, week = 2),
+                            cfb_undefeated(season = 2022, week = 3),
+                            cfb_undefeated(season = 2022, week = 4),
+                            cfb_undefeated(season = 2022, week = 5),
+                            cfb_undefeated(season = 2022, week = 6),
+                            cfb_undefeated(season = 2022, week = 7),
+                            cfb_undefeated(season = 2022, week = 8),
+                            cfb_undefeated(season = 2022, week = 9),
+                            cfb_undefeated(season = 2022, week = 10),
+                            cfb_undefeated(season = 2022, week = 11),
+                            cfb_undefeated(season = 2022, week = 12),
+                            cfb_undefeated(season = 2022, week = 13),
+                            cfb_undefeated(season = 2022, week = 14),
+                            cfb_undefeated(season = 2022, week = 15))
+
+# date of each week
+cfb_dates_2022 <- lubridate::ymd(c("2022-08-27",
+                                   "2022-09-03",
+                                   "2022-09-10",
+                                   "2022-09-17",
+                                   "2022-09-24",
+                                   "2022-10-1",
+                                   "2022-10-8",
+                                   "2022-10-15",
+                                   "2022-10-22",
+                                   "2022-10-29",
+                                   "2022-11-5",
+                                   "2022-11-12",
+                                   "2022-11-19",
+                                   "2022-11-26",
+                                   "2022-12-3",
+                                   "2022-12-10"))
+
+cfb_undefeated_2022_stats <- homefield_stats(x = cfb_undefeated_2022,
+                                  temporal = cfb_dates_2022,
+                                  keep_max = FALSE,
+                                  keep_visuals = TRUE)
+
+```
+
+Converting output square meters to square miles.
+
+```{r}
+# converting land from square meters to square miles
+cfb_undefeated_2022_stats <- cfb_undefeated_2022_stats |>
+  dplyr::mutate(land = land/2.59e6)
+
+head(cfb_undefeated_2022_stats)
+
+```
+
+The dataframe output has summary statistics for each team and week. In this example, the population within Alabama's territory increases throughout the season.
+
+```{r}
+cfb_undefeated_2022_stats |>
+  dplyr::filter(entity == "Alabama") |>
+  dplyr::select(entity, pop, time) |>
+  head()
+```
+
+The outputted summary data from `homefield_stats()` can be used to create other graphics describing the maps. The homefield package has a built-in function to visualize the state of homefield maps over time: `homefield_racing()`. 
+
+## homefield_racing
+`homefield_racing()` generates a racing bar chart animation where entities compete for the top 10 spots based on summary statistics from `homefield_stats()`. 
+
+For example, the output dataframe from `homefield_stats()` describing the 2022 college football season can be visualized with the `homefield_racing()` function. As teams gain territory, they appear higher on chart. However, when a team loses, they are removed from the chart. This can show the impact of triumphant victories or heartbreaking defeats.
+
+```{r, eval = FALSE}
+homefield_racing(x = cfb_undefeated_2022_stats,
+                stat_name = "land",
+                title = "2022 Season Week by Week - Undefeated CFB homefield Map",
+                subtitle = "Area in Square Miles",
+                caption = "Data Source: cfbd.com",
+                output_file = "C:/Users/darthvader/Downloads/cfb_undefeated_2022_racing.gif")
+```
+
+![](../man/figures/homefield_racing.png)
+
+## homefield_shiny
+`homefield_shiny()` showcases several functions from the homefield package in an interactive application visualizing College Football seasons. Users can choose a type of map, season, and week and the homefield map will be automatically generated.
+![](../man/figures/homefield_shiny.png)

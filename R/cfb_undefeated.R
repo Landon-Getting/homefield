@@ -5,7 +5,7 @@
 #' @param week (Integer required): Week, values from 1-15, 1-14 for seasons pre-playoff (i.e. 2013 or eariler).
 #'
 #' @importFrom rlang .data
-#' @return Returns data frame prepared for hf_map().
+#' @return Returns data frame prepared for homefield_map().
 #' @export
 #'
 #' @examples
