@@ -20,7 +20,7 @@ The homefield package helps gather data and create visuals to show spatial relev
 install.packages("devtools")
 ```
 
-4. Install the homefield package via the Github repository. 
+4. Install the homefield package.
 ```{r, eval = FALSE}
 devtools::install_github("Landon-Getting/homefield")
 ```
