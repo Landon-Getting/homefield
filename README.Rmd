@@ -5,12 +5,10 @@ output: github_document
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/Landon-Getting/homefield/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Landon-Getting/homefield/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/Landon-Getting/homefield/branch/master/graph/badge.svg)](https://app.codecov.io/gh/Landon-Getting/homefield?branch=master)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-# Overview
+# Overview <img src="man/figures/logo.png" align="right" height="138" />
 
 The homefield package helps gather data and create visuals to show spatial relevance of entities. 
 
