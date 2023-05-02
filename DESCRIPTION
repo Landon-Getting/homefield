@@ -28,7 +28,6 @@ Imports:
   cfbfastR,
   ggthemes,
   png,
-  tibble,
   tidyr,
   rlang,
   tidycensus,
@@ -37,10 +36,8 @@ Imports:
   lubridate,
   scales,
   shiny,
-  knitr,
-  rmarkdown,
-  gifski,
-  leaflet.extras
+  leaflet.extras,
+  knitr
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/Landon-Getting/homfield/,

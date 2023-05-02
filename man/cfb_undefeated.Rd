@@ -18,5 +18,5 @@ Returns data frame prepared for homefield_map().
 Provides a data frame with the undefeated D1 College Football teams during a particular season and week. The data frame is ready for plotting with hf_map().
 }
 \examples{
-cfb_undefeated(season = 2016, week = 8)
+\dontrun{cfb_undefeated(season = 2016, week = 8)}
 }

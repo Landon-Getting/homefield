@@ -1,5 +1,5 @@
 test_that("queries successfully", {
-  skip_on_ci()
+  skip("api key does not translate to github actions")
 
   homefield_undefeated <- get0("cfb_undefeated_s1999_w4", envir = asNamespace("homefield"))
 

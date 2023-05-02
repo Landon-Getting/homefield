@@ -1,5 +1,5 @@
 test_that("outputs png file", {
-  skip_on_ci()
+  skip("long runtime, no api key in github actions")
 
   homefield_data <- get0("homefield_data", envir = asNamespace("homefield"))
 
