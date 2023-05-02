@@ -3,7 +3,7 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   homefield: homefield.html
-last_built: 2023-05-02T17:48Z
+last_built: 2023-05-02T18:11Z
 urls:
   reference: https://landon-getting.github.io/homefield/reference
   article: https://landon-getting.github.io/homefield/articles
