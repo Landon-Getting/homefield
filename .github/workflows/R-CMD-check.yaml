@@ -10,9 +10,6 @@ name: R-CMD-check
 
 jobs:
 
-  run: echo "CFBD_API_KEY=${{ secrets.CFBD_API_KEY }}" >> $GITHUB_ENV
-  run: echo "CENSUS_API_KEY=${{ secrets.CENSUS_API_KEY }}" >> $GITHUB_ENV
-
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
@@ -33,7 +30,13 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
+
       - uses: actions/checkout@v3
+
+      - name: Set API keys
+        run: |
+          echo "CFBD_API_KEY=${{ secrets.CFBD_API_KEY }}" >> $GITHUB_ENV
+          echo "CENSUS_API_KEY=${{ secrets.CENSUS_API_KEY }}" >> $GITHUB_ENV
 
       - uses: r-lib/actions/setup-pandoc@v2
 
