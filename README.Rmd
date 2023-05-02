@@ -2,9 +2,18 @@
 output: github_document
 ---
 
-## Introduction <img src="https://github.com/Landon-Getting/homefield-graphics/blob/main/sticker.png?raw=true" align="right" height="139" />
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/Landon-Getting/homefield/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Landon-Getting/homefield/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/Landon-Getting/homefield/branch/master/graph/badge.svg)](https://app.codecov.io/gh/Landon-Getting/homefield?branch=master)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+<!-- badges: end -->
+
+# Overview
 
 The homefield package helps gather data and create visuals to show spatial relevance of entities. 
+
 
 ![](https://github.com/Landon-Getting/homefield-graphics/blob/main/undefeated_map.png?raw=true)
 
@@ -242,7 +251,7 @@ homefield_racing(x = cfb_undefeated_2022_stats,
                 title = "2022 Season Week by Week - Undefeated CFB homefield Map",
                 subtitle = "Area in Square Miles",
                 caption = "Data Source: cfbd.com",
-                output_file = "C:/Users/darthvader/Downloads/cfb_undefeated_2022_racing.gif")
+                output_file = "C:/Users/lwget/Downloads/cfb_undefeated_2022_racing.gif")
 ```
 
 ![](https://github.com/Landon-Getting/homefield-graphics/blob/main/homefield_racing.gif?raw=true)
@@ -256,6 +265,8 @@ homefield_racing(x = cfb_undefeated_2022_stats,
 
 
 ## Acknowledgements
-The homefield package was created as a part of Dr. Heike Hofmann's STAT 585 at Iowa State University. 
+Thank you to [Matt Daniel](https://www.linkedin.com/in/matt-daniel-8b03b1196/) - designer of the homefield sticker.
 
-It was also inspired by similiar maps created by [u/CaptainScuttlebottom](https://www.reddit.com/user/CaptainScuttlebottom/) and [u/jloose128](https://www.reddit.com/user/jloose128/) on Reddit.
+The homefield package was created as a part of [Dr. Heike Hofmann's](https://heike.github.io/) STAT 585 at Iowa State University. 
+
+homefield was inspired by similar maps created by [u/CaptainScuttlebottom](https://www.reddit.com/user/CaptainScuttlebottom/) and [u/jloose128](https://www.reddit.com/user/jloose128/) on Reddit.

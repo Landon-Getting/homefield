@@ -1,5 +1,8 @@
 function(input, output) {
 
+  image <- entity <- lat <- lng <- geometry <- STUSPS <- GEOID <- centroid <- NULL
+  distances <- color <- image <- area <- id <- NULL
+
   reactive_output <- eventReactive(input$generate_map, {
 
     withProgress(message = 'homefield', value = 0, {

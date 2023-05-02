@@ -1,6 +1,6 @@
 # ui object
 fluidPage(
-  titlePanel(p("homefield - Interactive CFB Map", style = "color:#3474A7")),
+  titlePanel(p("homefield - Interactive CFB Map", style = "color:#C8102E")),
   sidebarLayout(
     sidebarPanel(
       column(width = 12, align = "center",img(src='https://github.com/Landon-Getting/homefield-graphics/blob/main/sticker.png?raw=true',height = "200px")),
