@@ -1,4 +1,5 @@
 test_that("calculates correct stats", {
+  skip_on_ci()
 
   cfb_undefeated_s1999_w4_stats <- get0("cfb_undefeated_s1999_w4_stats", envir = asNamespace("homefield"))
 

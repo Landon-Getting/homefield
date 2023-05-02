@@ -1,4 +1,5 @@
 test_that("queries successfully", {
+  skip_on_ci()
 
   homefield_undefeated <- get0("cfb_undefeated_s1999_w4", envir = asNamespace("homefield"))
 

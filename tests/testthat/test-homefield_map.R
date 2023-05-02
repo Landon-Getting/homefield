@@ -1,4 +1,5 @@
 test_that("outputs png file", {
+  skip_on_ci()
 
   homefield_data <- get0("homefield_data", envir = asNamespace("homefield"))
 

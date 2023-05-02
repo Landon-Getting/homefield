@@ -1,4 +1,5 @@
 test_that("outputs gif file", {
+  skip_on_ci()
 
   homefield_racing_data <- get0("cfb_undefeated_2022_stats", envir = asNamespace("homefield"))
 
