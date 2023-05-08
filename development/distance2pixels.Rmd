@@ -1,0 +1,47 @@
+```{r}
+reprex::reprex(input = '
+library(sf)
+library(leaflet)
+
+# loading spatial data
+nc <- st_read(system.file("shape/nc.shp", package="sf")) |>
+  sf::st_transform("+proj=longlat +datum=WGS84")
+
+polytest <- nc[1,15]
+
+# Creating leaflet map with polygons and markers
+leaflet::leaflet() |>
+  leaflet::addPolygons(data = polytest,
+              fillOpacity = 0,
+              color = "red",
+              weight = 1)', venue = "gh")
+
+```
+
+```{r}
+library(shiny)
+library(leaflet)
+
+ui <- fluidPage(
+  leafletOutput("map")
+)
+
+server <- function(input, output) {
+  output$map <- renderLeaflet({
+    leaflet() %>%
+      addTiles() %>%
+      addMarkers(lng = -122.4194, lat = 37.7749, popup = "San Francisco")
+  })
+  
+  onRender('
+    function disToPixeldistance(distance){
+  var l2 = L.GeometryUtil.destination(map.getCenter(),90,distance);
+  var p1 = map.latLngToContainerPoint(map.getCenter())
+  var p2 = map.latLngToContainerPoint(l2)
+  return p1.distanceTo(p2)
+  
+  }')
+}
+
+shinyApp(ui, server)
+```

@@ -1,5 +1,34 @@
 library(homefield)
 
+
+entity <- c("Iowa State Cyclones", "Florida Gators", "UCLA Bruins")
+
+# must be valid locations
+lat <- c(42.01400, 29.64994, 34.16133)
+lng <- c(-93.63577, -82.34858, -118.16765)
+
+# must be a color in hexcode format
+color <- c("#C8102E","#188F4F", "#1C73AD")
+
+# can be a link or local file
+image <- c("http://a.espncdn.com/i/teamlogos/ncaa/500/66.png",
+           "http://a.espncdn.com/i/teamlogos/ncaa/500/57.png",
+           "http://a.espncdn.com/i/teamlogos/ncaa/500-dark/26.png")
+
+homefield_data <- data.frame(entity,
+                             lat,
+                             lng,
+                             color,
+                             image)
+
+homefield_data
+
+homefield_map(x = homefield_data,
+              output_file = "C:/Users/lwget/Downloads/example_map.png",
+              title = "Hello STAT 585!",
+              credit = "Landon Getting")
+
+
 cfb_undefeated_s1999_w0 <- homefield::cfb_undefeated(season = 1999, week = 0)
 
 homefield_map(x = cfb_undefeated_s1999_w0,

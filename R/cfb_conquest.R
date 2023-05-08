@@ -54,6 +54,7 @@ cfb_conquest <- function(season, week, division = "fbs"){
     land_owners <- c("fbs", "fcs")
   }
 
+  # function to clean output data frames
   clean_teams <- function(teams){
 
     # getting best colors
@@ -69,6 +70,8 @@ cfb_conquest <- function(season, week, division = "fbs"){
         school %in% alt_logo_list ~ logo_2,
         !school %in% alt_logo_list ~ logo
       ))
+
+    teams <- as.data.frame(teams)
 
     return(teams)
   }

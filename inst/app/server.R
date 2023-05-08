@@ -19,21 +19,21 @@ function(input, output) {
       input_df <- data_working
 
       input_df_location <- input_df |>
-        dplyr::select(.data$entity,
-                      .data$lat,
-                      .data$lng)
+        dplyr::select(entity,
+                      lat,
+                      lng)
 
       setProgress(0.4, detail = "Calculating distances...")
       # converting lat/long to sf point object -------------------------------------
       input_df_location <-  sf::st_as_sf(input_df_location,
                                          coords = c("lng", "lat"),
                                          crs = 4326) |>
-        dplyr::rename(location = .data$geometry)
+        dplyr::rename(location = geometry)
 
 
       comparing_distances <- tidyr::expand_grid(input_df_location,
                                                 counties |>
-                                                  dplyr::select(.data$GEOID, .data$centroid) |>
+                                                  dplyr::select(GEOID, centroid) |>
                                                   sf::st_drop_geometry())
 
       comparing_distances$location <- sf::st_as_sf(comparing_distances$location)
@@ -44,51 +44,51 @@ function(input, output) {
                                                        by_element = TRUE)
 
       comparing_distances <- comparing_distances |>
-        dplyr::select(.data$GEOID,
-                      .data$entity,
-                      .data$distances) |>
-        dplyr::group_by(.data$GEOID) |>
-        dplyr::slice(which.min(.data$distances))
+        dplyr::select(GEOID,
+                      entity,
+                      distances) |>
+        dplyr::group_by(GEOID) |>
+        dplyr::slice(which.min(distances))
 
       setProgress(0.6, detail = "Mixing colors...")
       # Create data frame for color mapping -----------------------------------------
 
       homefield_map_df <- comparing_distances |>
-        dplyr::select(.data$GEOID,
-                      .data$entity) |>
+        dplyr::select(GEOID,
+                      entity) |>
         dplyr::left_join(counties |>
                            tigris::shift_geometry() |> # shift Alaska and Hawaii below
                            sf::st_transform("+proj=longlat +datum=WGS84") |>
-                           dplyr::select(.data$GEOID,
-                                         .data$geometry),
+                           dplyr::select(GEOID,
+                                         geometry),
                          by = "GEOID",
                          keep = FALSE) |>
         dplyr::left_join(input_df |>
-                           dplyr::select(.data$entity,
-                                         .data$color,
-                                         .data$image)|>
+                           dplyr::select(entity,
+                                         color,
+                                         image)|>
                            dplyr::distinct(),
                          by = "entity",
                          keep = FALSE)
 
       homefield_map_df <- sf::st_as_sf(homefield_map_df) |>
-        dplyr::mutate(border_color = contrast_color(.data$color))
+        dplyr::mutate(border_color = contrast_color(color))
 
       setProgress(0.8, detail = "Arranging images...")
       # Apply the function to the example data frame
       counties_grouped <- homefield_map_df |>
-        dplyr::group_by(.data$entity) |>
-        dplyr::summarise(geometry = suppressWarnings(sf::st_union(.data$geometry,
+        dplyr::group_by(entity) |>
+        dplyr::summarise(geometry = suppressWarnings(sf::st_union(geometry,
                                                                   is_coverage = TRUE))) # reduces calculation time
 
       counties_grouped <- sf::st_cast(counties_grouped |>
-                                        dplyr::select(.data$entity,
-                                                      .data$geometry),
+                                        dplyr::select(entity,
+                                                      geometry),
                                       "MULTIPOLYGON")
 
       counties_grouped <- sf::st_cast(counties_grouped |>
-                                        dplyr::select(.data$entity,
-                                                      .data$geometry),
+                                        dplyr::select(entity,
+                                                      geometry),
                                       "POLYGON") |>
         suppressWarnings()
 
@@ -101,21 +101,21 @@ function(input, output) {
                       id = dplyr::row_number())
 
       largest_areas <- counties_grouped |>
-        dplyr::group_by(.data$entity) |>
-        dplyr::filter(.data$area == max(.data$area))
+        dplyr::group_by(entity) |>
+        dplyr::filter(area == max(area))
 
       above_threshold_areas <- counties_grouped |>
-        dplyr::group_by(.data$entity) |>
-        dplyr::filter(.data$area > 1e10)
+        dplyr::group_by(entity) |>
+        dplyr::filter(area > 1e10)
 
       image_areas <- dplyr::bind_rows(largest_areas, above_threshold_areas) |>
-        dplyr::distinct(.data$id, .keep_all = TRUE) |>
-        dplyr::arrange(.data$entity) |>
-        dplyr::mutate(centroid = sf::st_centroid(.data$geometry)) |>
-        dplyr::left_join(input_df |> dplyr::select(.data$entity,
-                                                   .data$image),
+        dplyr::distinct(id, .keep_all = TRUE) |>
+        dplyr::arrange(entity) |>
+        dplyr::mutate(centroid = sf::st_centroid(geometry)) |>
+        dplyr::left_join(input_df |> dplyr::select(entity,
+                                                   image),
                          by = "entity") |>
-        dplyr::arrange(.data$entity)
+        dplyr::arrange(entity)
 
 
       # magic to adjust the icon size based on territory area

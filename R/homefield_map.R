@@ -140,7 +140,6 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
 
   input_df <- x
 
-  entity <- lat <- lng <- NULL # passes R CMD CHECK
   input_df_location <- input_df |>
     dplyr::select(entity,
                   lat,
