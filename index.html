@@ -91,10 +91,9 @@
 </ol>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"Landon-Getting/homefield"</span><span class="op">)</span></span></code></pre></div>
-<p><em>homefield relies on two online databases for up-to-date college football and census information. These databases require API keys which can be requested and installed via the following instructions:</em></p>
+<p><em>homefield relies on an online database for up-to-date college football information. This database requires API keys which can be requested and installed via the following instructions:</em></p>
 <ol start="5" style="list-style-type: decimal">
 <li><p>Follow the directions <a href="https://cfbfastr.sportsdataverse.org/#college-football-data-api-keys" class="external-link">here</a> to receive and install a College Football Data API Key. Required for <code><a href="reference/cfb_undefeated.html">homefield::cfb_undefeated()</a></code> and <code><a href="reference/cfb_conquest.html">homefield::cfb_conquest()</a></code>.</p></li>
-<li><p>Follow the directions <a href="https://walker-data.com/tidycensus/reference/census_api_key.html" class="external-link">here</a> to receive and install a CENSUS API Key. Required for <code><a href="reference/homefield_stats.html">homefield::homefield_stats()</a></code>.</p></li>
 <li><p>Once the package and keys have been installed, homefield can be initialized in an environment via <code><a href="https://rdrr.io/r/base/library.html" class="external-link">library()</a></code>:</p></li>
 </ol>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -362,7 +361,6 @@
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Landon Getting <br><small class="roles"> Author, maintainer </small>  </li>
-<li>Sudesh Bhagat <br><small class="roles"> Author </small>  </li>
 </ul>
 </div>
 
@@ -380,7 +378,7 @@
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Landon Getting, Sudesh Bhagat.</p>
+<p>Developed by Landon Getting.</p>
 </div>
 
 <div class="pkgdown-footer-right">
