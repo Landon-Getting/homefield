@@ -119,7 +119,22 @@ function(input, output) {
 
 
       # magic to adjust the icon size based on territory area
-      icon_size <- (as.numeric((image_areas$area/1e11)) + 1) * 20
+      # distance from polygon centroid to closest point on polygon (as linestring)
+      best_center <- sf::st_as_sf(geomander::st_circle_center(image_areas)) |>
+        sf::st_transform("+proj=longlat +datum=WGS84")
+
+      image_areas$best_center <- best_center$geometry
+
+      image_areas$distance <- sf::st_length(sf::st_nearest_points(image_areas$geometry,
+                                                                  image_areas$best_center,
+                                                                  pairwise = TRUE))
+
+      image_areas$best_center_lng <- st_coordinates(image_areas$best_center)[,1]
+      image_areas$best_center_lat <- st_coordinates(image_areas$best_center)[,2]
+
+
+      # magic to adjust the icon size based on territory area
+      icon_size <- as.numeric(image_areas$distance/3000)
 
       icon_size <- ifelse(icon_size > 80, 80, icon_size)
 
@@ -182,6 +197,8 @@ function(input, output) {
                            label = ~entity,
                            group = "changing") |>
       leaflet::addMarkers(data = image_areas,
+                          lat = image_areas$best_center_lat,
+                          lng = image_areas$best_center_lng,
                           label = ~entity,
                           icon = logoIcons,
                           group = "changing")

@@ -259,8 +259,20 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
   # Create logos for map --------------------------------------------------------
   cli::cli_alert_info("Adding images to map...")
 
+  best_center <- sf::st_as_sf(geomander::st_circle_center(image_areas)) |>
+    sf::st_transform("+proj=longlat +datum=WGS84")
+
+  image_areas$best_center <- best_center$geometry
+
+  image_areas$distance <- sf::st_length(sf::st_nearest_points(image_areas$geometry,
+                                                              image_areas$best_center,
+                                                               pairwise = TRUE))
+
+  image_areas$best_center_lng <- st_coordinates(image_areas$best_center)[,1]
+  image_areas$best_center_lat <- st_coordinates(image_areas$best_center)[,2]
+
   # magic to adjust the icon size based on territory area
-  icon_size <- (as.numeric((image_areas$area/1e11)) + 1) * 43
+  icon_size <- as.numeric(image_areas$distance/1000)
 
   icon_size <- ifelse(icon_size > 400, 400, icon_size)
 
@@ -327,6 +339,8 @@ homefield_map <- function(x, threshold = 10000, output_file, title = NULL, credi
                          stroke = T,
                          label = ~entity) |>
     leaflet::addMarkers(data = image_areas,
+                        lat = image_areas$best_center_lat,
+                        lng = image_areas$best_center_lng,
                         label = ~entity,
                         icon = logoIcons) |>
     leaflet::addPolylines(data = states,

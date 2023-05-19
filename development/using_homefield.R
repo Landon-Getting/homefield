@@ -23,6 +23,17 @@ homefield_data <- data.frame(entity,
 
 homefield_data
 
+x = homefield_data
+output_file = "C:/Users/lwget/Downloads/example_map.png"
+title = "Hello STAT 585!"
+credit = "Landon Getting"
+
+
+homefield_map(x = x,
+              output_file = output_file,
+              title = title,
+              credit = "Landon Getting")
+
 homefield_map(x = homefield_data,
               output_file = "C:/Users/lwget/Downloads/example_map.png",
               title = "Hello STAT 585!",
@@ -35,6 +46,21 @@ homefield_map(x = cfb_undefeated_s1999_w0,
              output_file = "C:/Users/lwget/Downloads/cfb_undefeated_s2022_w0.png",
              title = "College Football Undefeated - Season 1999 Week 0",
              credit = "Landon Getting")
+
+cfb_conquest_s1999_w0 <- homefield::cfb_conquest(season = 1999, week = 3)
+
+homefield_map(x = cfb_conquest_s1999_w0,
+              output_file = "C:/Users/lwget/Downloads/conquest_map.png",
+              title = "College Football Conquest - Season 1999 Week 0",
+              credit = "Landon Getting")
+
+
+cfb_conquest_s2016_w6 <- homefield::cfb_conquest(season = 2016, week = 6)
+
+homefield_map(x = cfb_conquest_s2016_w6,
+              output_file = "C:/Users/lwget/Downloads/conquest_map_hard.png",
+              title = "College Football Conquest - Season 2016 Week 6",
+              credit = "Landon Getting")
 
 
 for(i in 0:15){

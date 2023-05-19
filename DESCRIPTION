@@ -6,11 +6,7 @@ Authors@R:
   c(person(given = "Landon",
            family = "Getting",
            role = c("aut", "cre"),
-           email = "landongetting@gmail.com"),
-    person(given = "Sudesh",
-           family = "Bhagat",
-           role = "aut",
-           email = "bhagat@iastate.edu"))
+           email = "landongetting@gmail.com")
 Maintainer: Landon Getting <landongetting@gmail.com>
 Description: The homefield package helps gather data and create visuals to show spatial relevance of entities. 
 License: MIT + file LICENSE
@@ -37,7 +33,8 @@ Imports:
   scales,
   shiny,
   leaflet.extras,
-  knitr
+  knitr,
+  geomander
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/Landon-Getting/homfield/,
