@@ -27,6 +27,7 @@ x = homefield_data
 output_file = "C:/Users/lwget/Downloads/example_map.png"
 title = "Hello STAT 585!"
 credit = "Landon Getting"
+threshold = 10000
 
 
 homefield_map(x = x,
@@ -40,7 +41,7 @@ homefield_map(x = homefield_data,
               credit = "Landon Getting")
 
 
-cfb_undefeated_s1999_w0 <- homefield::cfb_undefeated(season = 1999, week = 0)
+cfb_undefeated_s1999_w0 <- homefield::cfb_undefeated(season = 1999, week = 14)
 
 homefield_map(x = cfb_undefeated_s1999_w0,
              output_file = "C:/Users/lwget/Downloads/cfb_undefeated_s2022_w0.png",
@@ -70,9 +71,10 @@ for(i in 0:15){
                credit = "Landon Getting")
 }
 
+cfb_undefeated_s2022_w6 <- homefield::cfb_undefeated(season = 2022, week = 6)
+
 cfb_undefeated_s2022_w6_stats <- homefield_stats(x = cfb_undefeated_s2022_w6)
 
-View(cfb_undefeated_s2022_w6_stats)
 
 # what was the most land acquired by a team?
 max(cfb_undefeated_s2022_w6_stats$land)
@@ -138,3 +140,26 @@ homefield_racing(x = temporal_stats_plot,
                 subtitle = "Area in Square Miles",
                 caption = "Data Source: cfbd.com",
                 output_file = "C:/Users/lwget/Downloads/cfb_undefeated_s2022_racing.gif")
+
+
+x <- temporal_stats
+stat_name = "pop"
+title = "2022 Season Week by Week - Undefeated CFB homefield Map"
+subtitle = "Population within Territory"
+caption = "Data Source: cfbd.com"
+output_file = "C:/Users/lwget/Downloads/cfb_undefeated_s2022_racing_pop.gif"
+
+homefield_racing(x = x,
+                 stat_name = stat_name,
+                 title = title,
+                 subtitle = subtitle,
+                 caption = caption,
+                 output_file = output_file)
+
+
+for(i in 0:15) {
+  homefield_map(x = x_input[[i+1]],
+                output_file = paste0("C:/Users/lwget/Downloads/cfb_undefeated_s2022_w", i,".png"),
+                title = paste0("College Football Undefeated - Season 2022 Week ", i),
+                credit = "Landon Getting")
+}

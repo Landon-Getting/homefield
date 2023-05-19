@@ -6,7 +6,7 @@ Authors@R:
   c(person(given = "Landon",
            family = "Getting",
            role = c("aut", "cre"),
-           email = "landongetting@gmail.com")
+           email = "landongetting@gmail.com"))
 Maintainer: Landon Getting <landongetting@gmail.com>
 Description: The homefield package helps gather data and create visuals to show spatial relevance of entities. 
 License: MIT + file LICENSE

@@ -115,9 +115,9 @@ homefield_stats <- function(x,
   }
 
   if(continental == TRUE){
-    STUSPS_filter <- c("VI", "PR", "GU", "AS", "MP", "UM", "AK", "HI")
+    STUSPS_filter <- c("AK", "HI")
   } else{
-    STUSPS_filter <- c("VI", "PR", "GU", "AS", "MP", "UM")
+    STUSPS_filter <- c()
   }
 
   # input data checks ----------------------------------------------------------
@@ -208,10 +208,9 @@ homefield_stats <- function(x,
                                        crs = 4326) |>
       dplyr::rename(location = geometry)
 
-    counties <- tigris::counties(cb = TRUE, progress_bar = FALSE) |>
+    counties <- get0("counties", envir = asNamespace("homefield")) |>
       dplyr::filter(!STUSPS %in% STUSPS_filter) |> # filtering out territories
-      sf::st_transform("+proj=longlat +datum=WGS84") |> # Reproject to WGS84
-      suppressMessages()
+      sf::st_transform("+proj=longlat +datum=WGS84") # Reproject to WGS84
 
     counties$centroid <- sf::st_centroid(counties$geometry)
 
@@ -250,15 +249,9 @@ homefield_stats <- function(x,
     territory_map_df <- sf::st_drop_geometry(territory_map_df)
 
     # Getting population data  ---------------------------------------------------
-    counties_pop <- tidycensus::get_estimates(geography = "county",
-                                              product = "population") |>
-      dplyr::filter(variable != "DENSITY") |>
-      dplyr::select(GEOID,
-                    value) |>
-      dplyr::rename(population = value)
-
     territory_map_df <- dplyr::left_join(territory_map_df,
-                                         counties_pop,
+                                         get0("counties_pop",
+                                              envir = asNamespace("homefield")),
                                          by = "GEOID")
 
     # Calculating map stats  ---------------------------------------------------

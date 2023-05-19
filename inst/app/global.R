@@ -1,15 +1,11 @@
 STUSPS <- NULL
 
-states <- tigris::states(cb = TRUE, progress_bar = FALSE) |>
-  dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |>
+states <- get0("states", envir = asNamespace("homefield")) |>
   tigris::shift_geometry() |>
-  sf::st_transform("+proj=longlat +datum=WGS84") |>
-  suppressMessages()
+  sf::st_transform("+proj=longlat +datum=WGS84") # Reproject to WGS84
 
-counties <- tigris::counties(cb = TRUE, progress_bar = FALSE) |>
-  dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) |> # filtering out territories
-  sf::st_transform("+proj=longlat +datum=WGS84") |> # Reproject to WGS84
-  suppressMessages()
+counties <- get0("counties", envir = asNamespace("homefield")) |>
+  sf::st_transform("+proj=longlat +datum=WGS84") # Reproject to WGS84
 
 counties$centroid <- sf::st_centroid(counties$geometry)
 

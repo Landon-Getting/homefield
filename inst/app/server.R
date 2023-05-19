@@ -129,14 +129,12 @@ function(input, output) {
                                                                   image_areas$best_center,
                                                                   pairwise = TRUE))
 
-      image_areas$best_center_lng <- st_coordinates(image_areas$best_center)[,1]
-      image_areas$best_center_lat <- st_coordinates(image_areas$best_center)[,2]
+      image_areas$best_center_lng <- sf::st_coordinates(image_areas$best_center)[,1]
+      image_areas$best_center_lat <- sf::st_coordinates(image_areas$best_center)[,2]
 
 
       # magic to adjust the icon size based on territory area
       icon_size <- as.numeric(image_areas$distance/3000)
-
-      icon_size <- ifelse(icon_size > 80, 80, icon_size)
 
       logoIcons <- leaflet::icons(
         iconUrl = image_areas$image,

@@ -33,13 +33,11 @@ install.packages("devtools")
 devtools::install_github("Landon-Getting/homefield")
 ```
 
-*homefield relies on two online databases for up-to-date college football and census information. These databases require API keys which can be requested and installed via the following instructions:*
+*homefield relies on an online database for up-to-date college football information. This database requires API keys which can be requested and installed via the following instructions:*
 
 5. Follow the directions [here](https://cfbfastr.sportsdataverse.org/#college-football-data-api-keys) to receive and install a College Football Data API Key. Required for `homefield::cfb_undefeated()` and `homefield::cfb_conquest()`.
 
-6. Follow the directions [here](https://walker-data.com/tidycensus/reference/census_api_key.html) to receive and install a CENSUS API Key. Required for `homefield::homefield_stats()`.
-
-7. Once the package and keys have been installed, homefield can be initialized in an environment via `library()`:
+6. Once the package and keys have been installed, homefield can be initialized in an environment via `library()`:
 ```{r eval = FALSE}
 library(homefield)
 # your code here

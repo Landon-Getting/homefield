@@ -176,6 +176,38 @@ alt_logo_list = c("Air Force",
 
 
 ```{r}
+  states <- tigris::states(cb = TRUE, progress_bar = FALSE) |>
+    dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) 
+
+  counties <- tigris::counties(cb = TRUE, progress_bar = FALSE) |>
+    dplyr::filter(!STUSPS %in% c("VI", "PR", "GU", "AS", "MP", "UM")) 
+```
+
+```{r}
+counties_pop <- tidycensus::get_estimates(geography = "county",
+                                              product = "population") |>
+      dplyr::filter(variable != "DENSITY") |>
+      dplyr::select(GEOID,
+                    value) |>
+      dplyr::rename(population = value)
+```
+
+```{r}
+alt_color_list <- get0("alt_color_list", envir = asNamespace("homefield"))
+alt_logo_list <- get0("alt_logo_list", envir = asNamespace("homefield"))
+homefield_data <- get0("homefield_data", envir = asNamespace("homefield"))
+cfb_undefeated_s1999_w4 <- get0("cfb_undefeated_s1999_w4", envir = asNamespace("homefield"))
+cfb_conquest_s1999_w4 <- get0("cfb_conquest_s1999_w4", envir = asNamespace("homefield"))
+cfb_undefeated_s1999_w4_stats <- get0("cfb_undefeated_s1999_w4_stats", envir = asNamespace("homefield"))
+top_5_by_pop <- get0("top_5_by_pop", envir = asNamespace("homefield"))
+cfb_undefeated_2022_stats <- get0("cfb_undefeated_2022_stats", envir = asNamespace("homefield"))
+alabama_stats <- get0("alabama_stats", envir = asNamespace("homefield"))
+states <- get0("states", envir = asNamespace("homefield"))
+counties <- get0("counties", envir = asNamespace("homefield"))
+counties_pop <- get0("counties_pop", envir = asNamespace("homefield"))
+```
+
+```{r}
 usethis::use_data(alt_color_list, 
                   alt_logo_list, 
                   homefield_data,
@@ -185,6 +217,9 @@ usethis::use_data(alt_color_list,
                   top_5_by_pop,
                   cfb_undefeated_2022_stats,
                   alabama_stats,
+                  states,
+                  counties,
+                  counties_pop,
                   overwrite = TRUE,
                   internal = TRUE)
 ```
